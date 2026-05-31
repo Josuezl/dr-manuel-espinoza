@@ -19,7 +19,7 @@ export const blogPostsData: BlogPost[] = [
     type: "articulo",
     date: "2026-05-15",
     readTime: "5 min de lectura",
-    imageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/Imagenes /Tavi.jpeg",
     author: "Dr. Manuel Espinoza"
   },
   {
@@ -30,7 +30,7 @@ export const blogPostsData: BlogPost[] = [
     type: "caso-clinico",
     date: "2026-05-02",
     readTime: "8 min de lectura",
-    imageUrl: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/Imagenes /Angioplastia guiada por IVUS y litotricia intravascular .webp",
     author: "Dr. Manuel Espinoza"
   },
   {
@@ -41,7 +41,7 @@ export const blogPostsData: BlogPost[] = [
     type: "articulo",
     date: "2026-04-20",
     readTime: "6 min de lectura",
-    imageUrl: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/Imagenes /Ultrasonido Intracoronario (IVUS).jpeg",
     author: "Dr. Manuel Espinoza"
   }
 ];

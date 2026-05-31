@@ -18,7 +18,7 @@ export default function CasosClinicos() {
       patient: "Femenina, 76 años. Antecedente de hipertensión arterial y estenosis aórtica severa sintomática. Disnea de mínimos esfuerzos (CF III-IV).",
       procedure: "Se realizó una tomografía multicorte 3D preprocedimiento para planificación de diámetros. Bajo sedación consciente y anestesia local, se obtuvo acceso percutáneo femoral derecho. Se realizó cruce valvular guiado por fluoroscopia y colocación de guía de alto soporte en ventrículo izquierdo. Se realizó dilatación valvular con balón y posterior despliegue controlado de una prótesis autoexpandible de 26 mm. Todo el proceso fue guiado por ecocardiografía transtorácica y fluoroscopia de precisión.",
       result: "Gradiente aórtico medio residual de 4 mmHg (óptimo), sin fuga paravalvular detectable. Traslado directo a cuidados intermedios. Alta médica a las 48 horas sin requerimiento de marcapasos definitivo.",
-      imageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800",
+      imageUrl: "/Imagenes /Tavi.jpeg",
       date: "2026-04-10"
     },
     {
@@ -28,7 +28,7 @@ export default function CasosClinicos() {
       patient: "Masculino, 64 años. Diagnóstico de insuficiencia cardíaca congestiva con fracción de eyección reducida (FEVI 28%) e insuficiencia mitral severa funcional (grado IV) refractaria al tratamiento médico óptimo.",
       procedure: "Bajo anestesia general y guía estrecha de ecocardiografía transesofágica (ETE) tridimensional, se realizó punción transeptal para acceder a la aurícula izquierda. Se introdujo el sistema de entrega y se procedió a alinear el clip valvular sobre los velos de la válvula mitral en el segmento A2-P2. Se realizó la captura y clipado de los bordes libres de los velos anterior y posterior, reduciendo sustancialmente el orificio regurgitante.",
       result: "Reducción inmediata de la insuficiencia mitral de grado IV (severo) a grado I (leve). Descenso de las presiones pulmonares de inmediato. El paciente reporta mejoría sintomática marcada a las 24 horas y es dado de alta al tercer día con optimización médica.",
-      imageUrl: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=800",
+      imageUrl: "/Imagenes /Angioplastia guiada por IVUS y litotricia intravascular .webp",
       date: "2026-03-22"
     }
   ];

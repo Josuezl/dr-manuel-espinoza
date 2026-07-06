@@ -1,108 +1,112 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", var(--font-sans), sans-serif;
-  --font-serif: "Playfair Display", var(--font-serif), serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex), ui-monospace, monospace;
 
-  --color-primary: #0B2A40;
-  --color-secondary: #0097B2;
-  --color-accent: #0097B2;
-  --color-cold-white: #F8FBFD;
-  --color-pearl-grey: #EFF3F5;
+  /* Noche clínica */
+  --color-night: #06121d;
+  --color-abyss: #040c14;
+  --color-surface: #0b1f2e;
+  --color-line: #1c3547;
 
-  --color-primary-hover: #071c2b;
-  --color-secondary-hover: #007e94;
-  --color-accent-hover: #007e94;
+  /* Luz */
+  --color-paper: #eef5f8;
+  --color-cloud: #8ea7b6;
+  --color-muted: #5f7c8e;
 
-  --animate-heartbeat: heartbeat 2s ease-in-out infinite;
-
-  @keyframes heartbeat {
-    0%, 100% {
-      transform: scale(1);
-    }
-    14% {
-      transform: scale(1.08);
-    }
-    28% {
-      transform: scale(1);
-    }
-    42% {
-      transform: scale(1.08);
-    }
-    70% {
-      transform: scale(1);
-    }
-  }
+  /* Acción y pulso */
+  --color-teal: #1cadbc;
+  --color-teal-deep: #12808c;
+  --color-pulse: #ff5148;
 }
 
-@keyframes dash {
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes cardiac-pulse {
-  0%   { transform: scale(1); opacity: 0.75; }
-  100% { transform: scale(2); opacity: 0; }
-}
-
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0,151,178,0); }
-  15%       { box-shadow: 0 0 18px 6px rgba(0,151,178,0.55); }
-  30%       { box-shadow: 0 0 0 0 rgba(0,151,178,0); }
-  45%       { box-shadow: 0 0 14px 4px rgba(0,151,178,0.35); }
-  60%       { box-shadow: 0 0 0 0 rgba(0,151,178,0); }
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-
-:root {
-  --background: #F8FBFD;
-  --foreground: #0B2A40;
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 4rem;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--color-night);
+  color: var(--color-paper);
   font-family: var(--font-sans);
   overflow-x: hidden;
-  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Scrollbar for premium feel */
+/* Grano de película sobre toda la experiencia */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background-color: var(--color-pulse);
+  color: var(--color-night);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 3px;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #EFF3F5;
+  background: var(--color-abyss);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #0097B2;
-  border-radius: 4px;
+  background: var(--color-line);
+  border-radius: 5px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #007e94;
+  background: var(--color-teal-deep);
 }
 
-/* Utility classes for typography */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif);
+/* Latido ambiente del indicador de scroll */
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
 }
 
-.text-gradient {
-  background: linear-gradient(135deg, #0B2A40 30%, #0097B2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(239, 243, 245, 0.7);
-  box-shadow: 0 10px 30px -10px rgba(11, 42, 64, 0.05);
+.scroll-hint {
+  animation: scroll-hint 2.2s ease-in-out infinite;
+}
+
+@keyframes scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  55% {
+    transform: translateY(10px);
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .pulse-dot,
+  .scroll-hint {
+    animation: none;
+  }
 }

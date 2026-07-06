@@ -1,18 +1,29 @@
+import Header from "@/components/Header";
+import ScrollEcg from "@/components/ScrollEcg";
 import Hero from "@/components/Hero";
-import Stats from "@/components/Stats";
-import Specialties from "@/components/Specialties";
-import EducationalVideo from "@/components/EducationalVideo";
-import BlogPreview from "@/components/BlogPreview";
+import Videos from "@/components/Videos";
+import Milestone from "@/components/Milestone";
+import Procedures from "@/components/Procedures";
+import About from "@/components/About";
+import Publications from "@/components/Publications";
+import Appointments from "@/components/Appointments";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
     <>
-      <Hero />
-      <Stats />
-      <Specialties />
-      <EducationalVideo />
-      <BlogPreview />
-      
+      <ScrollEcg />
+      <Header />
+      <main>
+        <Hero />
+        <Videos />
+        <Milestone />
+        <Procedures />
+        <About />
+        <Publications />
+        <Appointments />
+      </main>
+      <Footer />
     </>
   );
 }

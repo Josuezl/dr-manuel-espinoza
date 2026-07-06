@@ -17,8 +17,8 @@ export default function Appointments() {
         <Chapter index="06" title="Tu cita" />
 
         <WordsReveal
-          text="El recorrido termina donde empieza el tuyo."
-          accent={["el", "tuyo"]}
+          text="Agenda tu cita en minutos."
+          accent={["Agenda"]}
           className="mt-10 max-w-4xl font-display text-5xl font-semibold leading-[1.02] tracking-tight sm:text-7xl"
         />
 

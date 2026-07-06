@@ -55,7 +55,7 @@ export default function Hero() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex w-full flex-1 flex-col justify-center px-5 pb-10 pt-28 sm:px-14">
+      <div className="relative z-10 flex w-full flex-1 flex-col justify-end px-5 pb-10 pt-28 sm:justify-center sm:px-14">
         <Typewriter
           segments={[
             { text: "Intervenciones de alta complejidad guiadas por la " },

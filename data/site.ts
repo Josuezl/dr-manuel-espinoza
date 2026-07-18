@@ -29,36 +29,54 @@ export const milestone = {
 export const procedures = [
   {
     icon: "HeartPulse",
+    image: "/img/procedure-myclip.webp",
+    imagePosition: "50% 38%",
+    imageFit: "cover",
     name: "Reparación mitral percutánea (MyClip · TEER)",
     description:
       "Corrección de la insuficiencia mitral con un clip implantado por catéter, sin cirugía abierta. Primer procedimiento de este tipo realizado en Honduras.",
   },
   {
     icon: "ScanHeart",
+    image: "/img/procedure-tavi.webp",
+    imagePosition: "50% 50%",
+    imageFit: "contain",
     name: "TAVI · Implante valvular aórtico",
     description:
       "Reemplazo de la válvula aórtica por vía transcatéter para estenosis aórtica severa, incluida la planificación con tomografía y técnicas para anatomías complejas.",
   },
   {
     icon: "Route",
+    image: "/img/procedure-angioplasty.webp",
+    imagePosition: "50% 52%",
+    imageFit: "cover",
     name: "Angioplastia coronaria compleja",
     description:
       "Tratamiento de la enfermedad coronaria con stents, litotricia intravascular y técnicas avanzadas para lesiones calcificadas y multivaso.",
   },
   {
     icon: "Microscope",
+    image: "/img/procedure-ivus.webp",
+    imagePosition: "50% 50%",
+    imageFit: "contain",
     name: "Imagen intracoronaria (IVUS · OCT)",
     description:
       "Ultrasonido intravascular y tomografía de coherencia óptica para dimensionar cada lesión y optimizar el resultado de cada stent con precisión milimétrica.",
   },
   {
     icon: "Crosshair",
+    image: "/img/procedure-paravalvular.webp",
+    imagePosition: "50% 50%",
+    imageFit: "cover",
     name: "Cierre de fugas paravalvulares",
     description:
       "Oclusión percutánea de fugas alrededor de prótesis valvulares, con planificación por tomografía, fusión de imagen e impresión 3D.",
   },
   {
     icon: "Activity",
+    image: "/img/procedure-pulmonary-embolism.webp",
+    imagePosition: "55% 50%",
+    imageFit: "cover",
     name: "Tromboembolia pulmonar aguda",
     description:
       "Trombólisis dirigida por catéter asistida por ultrasonido: una alternativa de dosis baja y alta seguridad para la embolia pulmonar de riesgo intermedio y alto.",
@@ -132,14 +150,14 @@ export const clinics = [
 export const videos = [
   {
     src: "/video/video-1.mp4",
-    label: "Video 01",
+    poster: "/img/video-1-poster.png",
     title: "Tratamiento percutáneo de la insuficiencia de la válvula mitral",
     description:
       "Cómo se corrige la insuficiencia de la válvula mitral por catéter, sin cirugía abierta: la técnica detrás del primer MyClip de Honduras.",
   },
   {
     src: "/video/video-2.mp4",
-    label: "Video 02",
+    poster: "/img/video-2-poster.png",
     title: "Cardiopatías isquémicas",
     description:
       "Lo que el paciente con cardiopatía isquémica debe saber: cómo se estudia y se trata la enfermedad de las arterias coronarias.",
@@ -147,9 +165,9 @@ export const videos = [
 ];
 
 export const nav = [
-  { label: "Videos", href: "#videos" },
-  { label: "Noticias", href: "#noticias" },
   { label: "Procedimientos", href: "#procedimientos" },
-  { label: "Sobre mí", href: "#sobre-mi" },
-  { label: "Publicaciones", href: "#publicaciones" },
+  { label: "Perfil", href: "#sobre-mi" },
+  { label: "Hito clínico", href: "#noticias" },
+  { label: "Educación", href: "#videos" },
+  { label: "Evidencia", href: "#publicaciones" },
 ];

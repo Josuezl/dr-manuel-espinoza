@@ -1,10 +1,10 @@
 import Header from "@/components/Header";
-import ScrollEcg from "@/components/ScrollEcg";
 import Hero from "@/components/Hero";
-import Videos from "@/components/Videos";
-import Milestone from "@/components/Milestone";
+import ClinicalTicker from "@/components/ClinicalTicker";
 import Procedures from "@/components/Procedures";
 import About from "@/components/About";
+import Milestone from "@/components/Milestone";
+import Videos from "@/components/Videos";
 import Publications from "@/components/Publications";
 import Appointments from "@/components/Appointments";
 import Footer from "@/components/Footer";
@@ -12,14 +12,14 @@ import Footer from "@/components/Footer";
 export default function Home() {
   return (
     <>
-      <ScrollEcg />
       <Header />
-      <main>
+      <main className="overflow-hidden bg-frost">
         <Hero />
-        <Videos />
-        <Milestone />
+        <ClinicalTicker />
         <Procedures />
         <About />
+        <Milestone />
+        <Videos />
         <Publications />
         <Appointments />
       </main>

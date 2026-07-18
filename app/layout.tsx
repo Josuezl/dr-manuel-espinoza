@@ -1,22 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Figtree, IBM_Plex_Mono } from "next/font/google";
+import { Libre_Franklin, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { doctor } from "@/data/site";
 
-const bricolage = Bricolage_Grotesque({
+const libreFranklin = Libre_Franklin({
   subsets: ["latin"],
-  variable: "--font-bricolage",
+  weight: ["400", "500", "600"],
+  variable: "--font-libre-franklin",
+  display: "swap",
 });
 
-const figtree = Figtree({
+const sourceSans = Source_Sans_3({
   subsets: ["latin"],
-  variable: "--font-figtree",
-});
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex",
+  weight: ["400", "500", "600"],
+  variable: "--font-source-sans-3",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -47,7 +45,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#06121d",
+  themeColor: "#4b62d9",
   width: "device-width",
   initialScale: 1,
 };
@@ -58,10 +56,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="es"
-      className={`${bricolage.variable} ${figtree.variable} ${plexMono.variable}`}
-    >
+    <html lang="es" className={`${libreFranklin.variable} ${sourceSans.variable}`}>
       <body className="min-h-screen antialiased">{children}</body>
     </html>
   );

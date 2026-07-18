@@ -11,6 +11,8 @@ interface Segment {
 interface TypewriterProps {
   segments: Segment[];
   className?: string;
+  /** clase de color para los segmentos de acento */
+  accentClassName?: string;
   /** ms por carácter al escribir */
   typeSpeed?: number;
   /** ms por carácter al borrar */
@@ -28,6 +30,7 @@ interface TypewriterProps {
 export default function Typewriter({
   segments,
   className,
+  accentClassName = "text-teal",
   typeSpeed = 55,
   eraseSpeed = 22,
   holdMs = 3200,
@@ -86,7 +89,7 @@ export default function Typewriter({
           );
           if (visible === 0) return null;
           return (
-            <span key={i} className={seg.accent ? "text-teal" : undefined}>
+            <span key={i} className={seg.accent ? accentClassName : undefined}>
               {seg.text.slice(0, visible)}
             </span>
           );

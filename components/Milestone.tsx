@@ -1,92 +1,107 @@
 import Image from "next/image";
+import { ArrowUpRight } from "lucide-react";
 import { milestone, doctor } from "@/data/site";
-import Chapter from "./Chapter";
-import WordsReveal from "./WordsReveal";
 import Parallax from "./Parallax";
 import Reveal from "./Reveal";
+import SectionHeading from "./SectionHeading";
 
 /** Noticia destacada: el primer MyClip del país, reseñado en prensa. */
 export default function Milestone() {
   return (
-    <section id="noticias" className="relative py-28 sm:py-40">
-      <div className="mx-auto max-w-7xl px-5 sm:px-10">
-        <Chapter index="02" title="Publicaciones recientes" />
+    <section id="noticias" className="relative bg-frost py-6 sm:py-10 lg:py-16">
+      <div className="mx-auto max-w-[94rem] px-3 sm:px-5">
+        <div className="relative isolate overflow-hidden rounded-[2rem] bg-[linear-gradient(108deg,#4b62d9_0%,#4d66d6_62%,#263181_100%)] px-5 py-16 text-white shadow-[0_38px_90px_-55px_rgba(9,36,60,0.9)] sm:rounded-[3rem] sm:px-10 sm:py-20 lg:px-16 lg:py-24 xl:px-24">
+          <div
+            className="hero-blueprint pointer-events-none absolute inset-0 z-0 opacity-60"
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 z-0 h-64 w-64 bg-[radial-gradient(circle_at_bottom_left,rgba(75,98,217,0.34),transparent_68%)]"
+            aria-hidden="true"
+          />
 
-        <WordsReveal
-          text="El primer MyClip de Honduras."
-          accent={["MyClip"]}
-          className="mt-10 max-w-4xl font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl"
-        />
+          <div className="relative z-10 grid items-end gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.75fr)] lg:gap-16">
+            <SectionHeading
+              eyebrow={milestone.eyebrow}
+              title={milestone.title}
+              inverse
+              className="max-w-4xl"
+            />
+            <Reveal delay={0.12}>
+              <p className="text-lg leading-8 text-white/90 sm:text-[1.1875rem]">
+                {milestone.summary}
+              </p>
+            </Reveal>
+          </div>
 
-        <div className="mt-16 grid gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
-          <div className="order-2 lg:order-1">
-            <Parallax range={40}>
-              <figure className="overflow-hidden rounded-3xl border border-line">
-                <Image
-                  src={milestone.newsImage}
-                  alt="El equipo médico durante el primer procedimiento MyClip de Honduras, en el Hospital del Valle"
-                  width={917}
-                  height={684}
-                  className="h-auto w-full"
-                />
-                <figcaption className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-5 py-3.5">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-cloud">
+          <div className="relative z-10 mt-14 grid items-start gap-12 sm:mt-16 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.72fr)] lg:gap-16 xl:gap-20">
+            <Parallax range={32}>
+              <figure className="media-zoom overflow-hidden rounded-[1.5rem] border border-white/15 bg-white/5 sm:rounded-[2rem]">
+                <div className="overflow-hidden">
+                  <Image
+                    src={milestone.newsImage}
+                    alt="El equipo médico durante el primer procedimiento MyClip de Honduras, en el Hospital del Valle"
+                    width={917}
+                    height={684}
+                    sizes="(max-width: 1023px) 100vw, 58vw"
+                    className="aspect-[4/3] h-auto w-full object-cover"
+                  />
+                </div>
+                <figcaption className="flex flex-col gap-2 border-t border-white/15 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/70">
                     Hospital del Valle · Mayo 2026
                   </span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-pulse">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white">
                     Primer MyClip del país
                   </span>
                 </figcaption>
               </figure>
             </Parallax>
 
-            <Reveal delay={0.15}>
-              <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-7">
-                {milestone.facts.map((fact) => (
-                  <div key={fact.label} className="border-t border-line pt-4">
-                    <dt className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
-                      {fact.label}
-                    </dt>
-                    <dd className="mt-2 text-sm font-medium leading-snug text-paper">
-                      {fact.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </Reveal>
-          </div>
+            <div>
+              <Reveal>
+                <blockquote className="relative">
+                  <p className="relative max-w-xl font-display text-xl font-medium leading-[1.45] tracking-[-0.02em] text-white sm:text-2xl">
+                    “{milestone.quote}”
+                  </p>
+                  <footer className="mt-6">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70">
+                      {doctor.shortName} · para {milestone.pressName}
+                    </span>
+                  </footer>
+                </blockquote>
+              </Reveal>
 
-          <div className="order-1 lg:order-2">
-            <Reveal>
-              <p className="text-lg leading-relaxed text-cloud sm:text-xl">
-                {milestone.summary}
-              </p>
-            </Reveal>
+              <Reveal delay={0.12}>
+                <dl className="mt-10 grid grid-cols-2 gap-x-5 gap-y-7">
+                  {milestone.facts.map((fact) => (
+                    <div
+                      key={fact.label}
+                      className="border-t border-white/15 pt-4"
+                    >
+                      <dt className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/70">
+                        {fact.label}
+                      </dt>
+                      <dd className="mt-2 text-sm font-medium leading-6 text-white/90">
+                        {fact.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </Reveal>
 
-            <Reveal delay={0.12}>
-              <blockquote className="mt-12">
-                <p className="font-display text-2xl font-medium leading-snug text-paper sm:text-3xl">
-                  “{milestone.quote}”
-                </p>
-                <footer className="mt-6 flex items-center gap-4">
-                  <span className="h-px w-10 bg-pulse" aria-hidden="true" />
-                  <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-cloud">
-                    {doctor.shortName} · para {milestone.pressName}
-                  </span>
-                </footer>
-              </blockquote>
-            </Reveal>
-
-            <Reveal delay={0.2}>
-              <a
-                href={milestone.pressUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-12 inline-flex items-center gap-3 border-b border-line pb-2 font-mono text-xs uppercase tracking-[0.25em] text-paper transition-colors hover:border-pulse hover:text-pulse"
-              >
-                Leer la noticia completa en {milestone.pressName} ↗
-              </a>
-            </Reveal>
+              <Reveal delay={0.2}>
+                <a
+                  href={milestone.pressUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="button-sweep mt-10 inline-flex min-h-12 items-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-semibold text-navy transition-colors hover:text-white"
+                >
+                  Leer la noticia en {milestone.pressName}
+                  <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                </a>
+              </Reveal>
+            </div>
           </div>
         </div>
       </div>

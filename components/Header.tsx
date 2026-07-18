@@ -1,104 +1,120 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { nav } from "@/data/site";
+import { useState } from "react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
+import { doctor, nav } from "@/data/site";
 
-/** Barra mínima: monograma, capítulos y la única acción que importa. */
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-[60] transition-colors duration-300 ${
-        scrolled || open
-          ? "border-b border-line bg-night/85 backdrop-blur-md"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="flex h-16 w-full items-center justify-between px-5 sm:px-14">
-        <a href="#inicio" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-          <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-pulse" aria-hidden="true" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cloud">
-            Cardiología intervencionista
+    <header className="absolute inset-x-0 top-0 z-[70] px-3 pt-3 sm:px-6 sm:pt-5">
+      <div className="header-frame relative mx-auto flex h-[4.5rem] max-w-[99rem] items-center text-white xl:pr-[12rem]">
+        <a
+          href="#inicio"
+          onClick={() => setOpen(false)}
+          className="group flex min-h-11 items-center gap-3 rounded-full pr-3"
+          aria-label={`${doctor.name}, ir al inicio`}
+        >
+          <span
+            className="grid h-11 w-11 place-items-center rounded-full bg-white text-cobalt shadow-[0_12px_35px_-18px_rgba(2,12,39,0.65)]"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 34 20" className="h-5 w-7" fill="none">
+              <path
+                d="M1 11h7l2-4 3 9 4-15 4 13 2-3h10"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <span className="leading-none">
+            <span className="block whitespace-nowrap font-display text-[10px] font-semibold uppercase tracking-[-0.025em] sm:text-[11px] xl:text-xs">
+              {doctor.name}
+            </span>
+            <span className="mt-1 hidden text-[9px] font-semibold uppercase tracking-[0.17em] text-white sm:block">
+              Cardiología intervencionista
+            </span>
           </span>
         </a>
 
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Principal">
-          {nav.map((item, i) => (
+        <nav
+          className="absolute right-0 hidden items-center xl:flex"
+          aria-label="Principal"
+        >
+          {nav.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="group flex items-baseline gap-2 text-sm text-cloud transition-colors hover:text-paper"
+              className="relative px-2.5 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-white transition-colors after:absolute after:inset-x-2.5 after:bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-white after:transition-transform hover:after:scale-x-100"
             >
-              <span className="font-mono text-[9px] tracking-widest text-muted group-hover:text-pulse">
-                {String(i + 1).padStart(2, "0")}
-              </span>
               {item.label}
             </a>
           ))}
-          <a
-            href="#citas"
-            className="rounded-full border border-teal px-5 py-2 text-sm font-semibold text-teal transition-colors hover:bg-teal hover:text-night"
-          >
-            Agendar cita
-          </a>
         </nav>
 
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
+          aria-controls="mobile-navigation"
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
-          className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 lg:hidden"
+          className="ml-auto grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-white text-ink shadow-[0_14px_38px_-20px_rgba(2,12,39,0.7)] xl:hidden"
         >
-          <span
-            className={`h-px w-6 bg-paper transition-transform duration-300 ${
-              open ? "translate-y-[3.5px] rotate-45" : ""
-            }`}
-          />
-          <span
-            className={`h-px w-6 bg-paper transition-transform duration-300 ${
-              open ? "-translate-y-[3.5px] -rotate-45" : ""
-            }`}
-          />
+          {open ? (
+            <X className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          )}
         </button>
       </div>
 
-      {open && (
-        <nav
-          className="border-t border-line bg-night px-5 pb-8 pt-4 lg:hidden"
-          aria-label="Principal móvil"
-        >
-          {nav.map((item, i) => (
+      <div
+        id="mobile-navigation"
+        aria-hidden={!open}
+        inert={!open}
+        className={`mx-auto mt-3 max-w-[99rem] overflow-hidden rounded-[1.75rem] border border-line bg-white shadow-[0_24px_80px_-32px_rgba(2,12,39,0.55)] transition-[max-height,opacity,transform] duration-500 xl:hidden ${
+          open
+            ? "max-h-[34rem] translate-y-0 opacity-100"
+            : "pointer-events-none max-h-0 -translate-y-2 opacity-0"
+        }`}
+      >
+        <nav className="p-3" aria-label="Principal móvil">
+          {nav.map((item) => (
             <a
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className="flex items-baseline gap-4 border-b border-line py-4 text-lg text-paper"
+              className="flex min-h-12 items-center justify-between rounded-2xl px-4 text-sm font-semibold text-ink transition-colors hover:bg-frost"
             >
-              <span className="font-mono text-[10px] tracking-widest text-pulse">
-                {String(i + 1).padStart(2, "0")}
-              </span>
               {item.label}
+              <ArrowUpRight className="h-4 w-4 text-cobalt" aria-hidden="true" />
             </a>
           ))}
           <a
             href="#citas"
             onClick={() => setOpen(false)}
-            className="mt-6 flex items-center justify-center rounded-full bg-teal px-5 py-3.5 text-sm font-semibold text-night"
+            className="mt-2 flex min-h-12 items-center justify-between rounded-2xl bg-cobalt px-4 text-sm font-semibold text-white"
           >
             Agendar cita
+            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
           </a>
         </nav>
-      )}
+      </div>
+
+      <a
+        href="#citas"
+        onClick={() => setOpen(false)}
+        aria-label="Agendar cita"
+        className="header-booking-float group fixed right-5 top-1/2 z-[80] hidden h-12 -translate-y-1/2 items-center rounded-full border border-white/15 bg-navy/95 py-1 pl-4 pr-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_18px_46px_-20px_rgba(2,12,39,0.76)] backdrop-blur-md transition-[background-color,transform,box-shadow] duration-300 hover:-translate-y-[calc(50%+3px)] hover:bg-cobalt-bright hover:shadow-[0_22px_52px_-18px_rgba(2,12,39,0.86)] xl:inline-flex"
+      >
+        <span className="whitespace-nowrap">Agendar cita</span>
+        <span className="ml-3 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-ink transition-transform duration-500 group-hover:-rotate-45">
+          <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        </span>
+      </a>
     </header>
   );
 }

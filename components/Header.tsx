@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { doctor, nav } from "@/data/site";
 
@@ -17,18 +18,16 @@ export default function Header() {
           aria-label={`${doctor.name}, ir al inicio`}
         >
           <span
-            className="grid h-11 w-11 place-items-center rounded-full bg-white text-cobalt shadow-[0_12px_35px_-18px_rgba(2,12,39,0.65)]"
+            className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-white shadow-[0_12px_35px_-18px_rgba(2,12,39,0.65)]"
             aria-hidden="true"
           >
-            <svg viewBox="0 0 34 20" className="h-5 w-7" fill="none">
-              <path
-                d="M1 11h7l2-4 3 9 4-15 4 13 2-3h10"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Image
+              src="/img/hero-heart-blueprint.png"
+              alt=""
+              fill
+              sizes="44px"
+              className="scale-[1.55] object-contain"
+            />
           </span>
           <span className="leading-none">
             <span className="block whitespace-nowrap font-display text-[10px] font-semibold uppercase tracking-[-0.025em] sm:text-[11px] xl:text-xs">

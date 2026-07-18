@@ -420,7 +420,7 @@ assert_contains "components/Publications.tsx" 'href={`https://pubmed.ncbi.nlm.ni
 assert_contains "components/Publications.tsx" 'target="_blank"'
 assert_contains "components/Publications.tsx" 'rel="noopener noreferrer"'
 assert_contains "components/Publications.tsx" 'aria-label={`${pub.title}. Abrir publicación en PubMed`}'
-assert_contains "components/Footer.tsx" "lg:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.7fr)_minmax(15rem,0.9fr)]"
+assert_contains "components/Footer.tsx" "lg:grid-cols-2"
 assert_absent "components/Footer.tsx" "Este sitio no sustituye una consulta médica"
 
 # Full-page narrative.
@@ -434,10 +434,10 @@ assert_contains "components/Publications.tsx" "id=\"publicaciones\""
 assert_contains "components/Appointments.tsx" "id=\"citas\""
 assert_contains "components/Footer.tsx" "{doctor.name}"
 assert_absent "components/Footer.tsx" "doctor.shortName"
-assert_count "components/Footer.tsx" "doctor." "3"
+assert_count "components/Footer.tsx" "doctor." "1"
 assert_absent "components/Footer.tsx" "milestone."
-assert_contains "components/Footer.tsx" "doctor.title"
-assert_contains "components/Footer.tsx" "doctor.city"
+assert_absent "components/Footer.tsx" "doctor.title"
+assert_absent "components/Footer.tsx" "doctor.city"
 assert_absent "app/globals.css" ".footer-wordmark"
 
 # Existing factual and booking contracts remain intact.
@@ -459,7 +459,8 @@ assert_contains "components/Appointments.tsx" "hero-blueprint"
 assert_contains "components/Appointments.tsx" "text-white"
 assert_contains "components/Appointments.tsx" "Agenda en línea segura · confirmación inmediata"
 assert_contains "components/Milestone.tsx" "bg-[linear-gradient(108deg,#4b62d9_0%,#4d66d6_62%,#263181_100%)]"
-assert_contains "components/Footer.tsx" "bg-[linear-gradient(108deg,#4b62d9_0%,#4d66d6_62%,#263181_100%)]"
+assert_absent "components/Footer.tsx" "bg-[linear-gradient(108deg,#4b62d9_0%,#4d66d6_62%,#263181_100%)]"
+assert_contains "components/Footer.tsx" "border-t border-line"
 assert_contains "components/Publications.tsx" "Producción científica"
 assert_contains "components/Publications.tsx" "Publicaciones científicas"
 assert_contains "components/Footer.tsx" "Todos los derechos reservados"

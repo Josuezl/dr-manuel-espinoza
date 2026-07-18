@@ -73,7 +73,7 @@ export default function Hero() {
         />
       </svg>
 
-      <div className="relative z-10 mx-auto grid max-w-[99rem] items-end gap-8 px-5 pb-16 pt-[9rem] sm:px-10 sm:pb-24 sm:pt-[10rem] md:pt-[11rem] xl:min-h-[58rem] xl:grid-cols-[minmax(0,34rem)_1fr] xl:px-14 xl:pb-28 xl:pt-[18rem]">
+      <div className="relative z-10 mx-auto grid max-w-[99rem] items-end gap-3 px-5 pb-0 pt-[6.75rem] sm:gap-8 sm:px-10 sm:pb-24 sm:pt-[10rem] md:pt-[11rem] xl:min-h-[58rem] xl:grid-cols-[minmax(0,34rem)_1fr] xl:px-14 xl:pb-28 xl:pt-[18rem]">
         <motion.div
           initial={reduce ? false : { opacity: 0, x: -34 }}
           animate={{ opacity: 1, x: 0 }}
@@ -83,27 +83,27 @@ export default function Hero() {
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white sm:text-xs">
             San Pedro Sula · Honduras
           </p>
-          <h1 className="mt-6 max-w-xl font-display text-[2.5rem] font-semibold leading-[1.03] tracking-[-0.035em] sm:text-[3.25rem] xl:text-[3.75rem]">
+          <h1 className="mt-5 max-w-xl font-display text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.035em] sm:mt-6 sm:text-[3.25rem] xl:text-[3.75rem]">
             Cardiología de alta complejidad.
           </h1>
-          <p className="mt-7 w-full max-w-md text-lg leading-8 text-white sm:text-[1.125rem]">
+          <p className="mt-5 w-full max-w-md text-base leading-7 text-white sm:mt-7 sm:text-[1.125rem] sm:leading-8">
             Intervenciones mínimamente invasivas para enfermedad coronaria y
             cardiopatía estructural, guiadas por imagen y evidencia.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-2 sm:mt-8 sm:gap-3">
             <a
               href="#citas"
-              className="group inline-flex min-h-12 items-center rounded-full bg-white pl-5 text-sm font-semibold text-cobalt"
+              className="group inline-flex min-h-11 items-center rounded-full bg-white pl-5 text-sm font-semibold text-cobalt sm:min-h-12"
             >
               Agendar cita
-              <span className="ml-3 grid h-12 w-12 place-items-center rounded-full border-[3px] border-white bg-navy text-white transition-transform duration-500 group-hover:-rotate-45">
+              <span className="ml-3 grid h-11 w-11 place-items-center rounded-full border-[3px] border-white bg-navy text-white transition-transform duration-500 group-hover:-rotate-45 sm:h-12 sm:w-12">
                 <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </span>
             </a>
             <a
               href="#procedimientos"
-              className="inline-flex min-h-12 items-center rounded-full border border-white/35 px-5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-cobalt"
+              className="inline-flex min-h-11 items-center rounded-full border border-white/35 px-5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-cobalt sm:min-h-12"
             >
               Ver procedimientos
             </a>
@@ -115,7 +115,7 @@ export default function Hero() {
           initial={reduce ? false : { opacity: 0, scale: 0.9, y: 45 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 1.05, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-20 h-[31rem] w-full max-w-[26rem] min-w-0 justify-self-center self-end sm:-mb-28 sm:h-[39rem] sm:w-[min(96vw,36rem)] sm:max-w-none md:mb-0 md:h-[44rem] xl:pointer-events-none xl:absolute xl:bottom-0 xl:right-[12%] xl:h-[calc(100%-4rem)] xl:w-[min(68vw,68rem)]"
+          className="relative z-20 -mt-1 h-[18.5rem] w-full max-w-[21rem] min-w-0 justify-self-center self-end sm:mt-0 sm:-mb-28 sm:h-[39rem] sm:w-[min(96vw,36rem)] sm:max-w-none md:mb-0 md:h-[44rem] xl:pointer-events-none xl:absolute xl:bottom-0 xl:right-[12%] xl:h-[calc(100%-4rem)] xl:w-[min(68vw,68rem)]"
         >
           <Image
             src="/img/dr-manuel-espinoza-cutout.webp"
@@ -132,7 +132,7 @@ export default function Hero() {
         initial={reduce ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.3, duration: 0.6 }}
-        className="absolute bottom-16 left-1/2 z-30 grid h-16 w-16 -translate-x-1/2 place-items-center rounded-full border-4 border-frost bg-white text-cobalt shadow-lg"
+        className="absolute bottom-16 left-1/2 z-30 hidden h-16 w-16 -translate-x-1/2 place-items-center rounded-full border-4 border-frost bg-white text-cobalt shadow-lg sm:grid"
         aria-label="Continuar a procedimientos"
       >
         <ArrowDown className="float-slow h-5 w-5" aria-hidden="true" />

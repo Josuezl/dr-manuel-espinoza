@@ -5,7 +5,7 @@ export default function ClinicalTicker() {
   return (
     <section
       aria-label="Áreas clínicas"
-      className="relative z-30 -mt-8 px-3 sm:px-8"
+      className="relative z-30 mt-0 px-3 sm:-mt-8 sm:px-8"
     >
       <div className="clinical-ticker-shell relative mx-auto max-w-[99rem] overflow-hidden rounded-[2rem] border border-white bg-white shadow-[0_24px_70px_-42px_rgba(2,12,39,0.42)]">
         <div

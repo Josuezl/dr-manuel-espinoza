@@ -73,12 +73,12 @@ export default function Hero() {
         />
       </svg>
 
-      <div className="relative z-10 mx-auto grid max-w-[99rem] items-end gap-8 px-5 pb-24 pt-[9rem] sm:px-10 sm:pt-[10rem] md:pt-[11rem] xl:min-h-[58rem] xl:grid-cols-[minmax(0,34rem)_1fr] xl:px-14 xl:pb-28 xl:pt-[18rem]">
+      <div className="relative z-10 mx-auto grid max-w-[99rem] items-end gap-8 px-5 pb-16 pt-[9rem] sm:px-10 sm:pb-24 sm:pt-[10rem] md:pt-[11rem] xl:min-h-[58rem] xl:grid-cols-[minmax(0,34rem)_1fr] xl:px-14 xl:pb-28 xl:pt-[18rem]">
         <motion.div
           initial={reduce ? false : { opacity: 0, x: -34 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.82, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-30 max-w-xl md:max-w-[31rem] md:pb-10 xl:col-start-1 xl:pb-28"
+          className="relative z-30 w-full min-w-0 max-w-[calc(100vw-2.5rem)] md:max-w-[31rem] md:pb-10 xl:col-start-1 xl:max-w-xl xl:pb-28"
         >
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white sm:text-xs">
             San Pedro Sula · Honduras
@@ -86,7 +86,7 @@ export default function Hero() {
           <h1 className="mt-6 max-w-xl font-display text-[2.5rem] font-semibold leading-[1.03] tracking-[-0.035em] sm:text-[3.25rem] xl:text-[3.75rem]">
             Cardiología de alta complejidad.
           </h1>
-          <p className="mt-7 max-w-md text-lg leading-8 text-white sm:text-[1.125rem]">
+          <p className="mt-7 w-full max-w-md text-lg leading-8 text-white sm:text-[1.125rem]">
             Intervenciones mínimamente invasivas para enfermedad coronaria y
             cardiopatía estructural, guiadas por imagen y evidencia.
           </p>
@@ -115,14 +115,14 @@ export default function Hero() {
           initial={reduce ? false : { opacity: 0, scale: 0.9, y: 45 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 1.05, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-20 -mb-24 h-[31rem] w-[min(116vw,38rem)] max-w-none justify-self-center self-end sm:-mb-28 sm:h-[39rem] sm:w-[min(110vw,44rem)] md:mb-0 md:h-[44rem] xl:pointer-events-none xl:absolute xl:bottom-0 xl:right-[12%] xl:h-[calc(100%-4rem)] xl:w-[min(68vw,68rem)]"
+          className="relative z-20 h-[31rem] w-full max-w-[26rem] min-w-0 justify-self-center self-end sm:-mb-28 sm:h-[39rem] sm:w-[min(96vw,36rem)] sm:max-w-none md:mb-0 md:h-[44rem] xl:pointer-events-none xl:absolute xl:bottom-0 xl:right-[12%] xl:h-[calc(100%-4rem)] xl:w-[min(68vw,68rem)]"
         >
           <Image
             src="/img/dr-manuel-espinoza-cutout.webp"
             alt={`Retrato del ${doctor.name}`}
             fill
             preload
-            className="hero-portrait-cutout z-10 origin-bottom scale-[1.06] object-contain object-bottom sm:scale-[1.03] xl:scale-[1.12]"
+            className="hero-portrait-cutout z-10 origin-bottom -translate-x-[2%] scale-[1.03] object-contain object-bottom sm:translate-x-0 sm:scale-[1.03] xl:scale-[1.12]"
           />
         </motion.figure>
       </div>

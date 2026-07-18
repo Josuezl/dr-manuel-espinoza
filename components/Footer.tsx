@@ -1,4 +1,4 @@
-import { doctor, nav, clinics, milestone } from "@/data/site";
+import { doctor, nav, clinics } from "@/data/site";
 import Reveal from "./Reveal";
 
 export default function Footer() {
@@ -11,22 +11,22 @@ export default function Footer() {
           aria-hidden="true"
         />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-5 pb-8 pt-14 sm:px-10 sm:pt-20">
-          <div className="grid auto-rows-fr gap-5 lg:grid-cols-2 xl:grid-cols-3">
-            <Reveal className="h-full">
-              <div className="flex h-full flex-col rounded-[2rem] border border-white/10 bg-white/[0.045] p-7 sm:p-9">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cobalt-soft/70">
+        <div className="relative z-10 mx-auto max-w-7xl px-5 pb-8 pt-12 sm:px-10 sm:pt-16">
+          <div className="grid gap-10 border-b border-white/15 pb-12 sm:gap-12 lg:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.7fr)_minmax(15rem,0.9fr)] lg:gap-16 lg:pb-14">
+            <Reveal>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cobalt-soft/75">
                   Cardiología intervencionista
                 </p>
-                <h2 className="mt-6 max-w-md font-display text-3xl font-semibold leading-tight tracking-[-0.05em] text-white sm:text-4xl">
+                <h2 className="mt-5 max-w-xl font-display text-[2rem] font-semibold leading-[1.1] tracking-[-0.04em] text-white sm:text-[2.5rem]">
                   Decisiones precisas para cuidar cada latido.
                 </h2>
-                <p className="mt-5 max-w-md text-sm leading-6 text-white/60">
+                <p className="mt-4 max-w-lg text-sm leading-6 text-white/70">
                   {doctor.title} · {doctor.city}
                 </p>
                 <a
                   href="#citas"
-                  className="button-sweep mt-9 inline-flex min-h-12 w-fit items-center justify-center rounded-full bg-cobalt px-6 text-xs font-semibold uppercase tracking-[0.14em] text-white"
+                  className="button-sweep mt-7 inline-flex min-h-11 w-fit items-center justify-center rounded-full bg-cobalt px-5 text-xs font-semibold uppercase tracking-[0.14em] text-white"
                 >
                   Agendar una cita
                   <span className="ml-3 text-base" aria-hidden="true">
@@ -36,25 +36,18 @@ export default function Footer() {
               </div>
             </Reveal>
 
-            <Reveal delay={0.08} className="h-full">
-              <nav
-                aria-label="Mapa del sitio"
-                className="h-full rounded-[2rem] border border-white/10 p-7 sm:p-9"
-              >
+            <Reveal delay={0.08}>
+              <nav aria-label="Mapa del sitio">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70">
                   Navegación
                 </p>
-                <ul className="mt-7 space-y-4">
+                <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 lg:grid-cols-1">
                   {nav.map((item) => (
                     <li key={item.href}>
                       <a
                         href={item.href}
-                        className="group inline-flex items-center gap-3 text-sm font-medium text-white/70 transition-colors hover:text-white"
+                        className="text-sm font-medium text-white/75 transition-colors hover:text-white"
                       >
-                        <span
-                          className="size-1.5 rounded-full bg-cobalt transition-transform group-hover:scale-150"
-                          aria-hidden="true"
-                        />
                         {item.label}
                       </a>
                     </li>
@@ -63,59 +56,35 @@ export default function Footer() {
               </nav>
             </Reveal>
 
-            <Reveal
-              delay={0.16}
-              className="h-full lg:col-span-2 lg:w-[calc(50%-0.625rem)] lg:justify-self-center xl:col-span-1 xl:w-auto xl:justify-self-stretch"
-            >
-              <div className="h-full rounded-[2rem] border border-white/10 p-7 sm:p-9">
+            <Reveal delay={0.16}>
+              <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70">
                   Consultorios
                 </p>
-                <ul className="mt-7 space-y-5">
+                <ul className="mt-5 space-y-3">
                   {clinics.map((clinic) => (
                     <li key={clinic.name}>
                       <a
                         href={clinic.bookingUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group block border-b border-white/10 pb-5"
+                        className="group flex items-start justify-between gap-4 border-b border-white/15 pb-3 text-sm font-semibold text-white transition-colors hover:text-cobalt-soft"
                       >
-                        <span className="flex items-start justify-between gap-4 text-sm font-semibold text-white transition-colors group-hover:text-cobalt-soft">
+                        <span>
                           {clinic.name}
-                          <span
-                            className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
-                            aria-hidden="true"
-                          >
-                            ↗
+                          <span className="mt-1 block text-xs font-normal text-white/65">
+                            {clinic.city}
                           </span>
                         </span>
-                        <span className="mt-2 block text-xs text-white/65">
-                          {clinic.city}
+                        <span
+                          className="shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+                          aria-hidden="true"
+                        >
+                          ↗
                         </span>
                       </a>
                     </li>
                   ))}
-                  <li>
-                    <a
-                      href={milestone.pressUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-start justify-between gap-4 text-sm leading-6 text-white/65 transition-colors hover:text-white"
-                    >
-                      <span>
-                        Primer MyClip de Honduras
-                        <span className="block text-xs text-white/65">
-                          Publicado por {milestone.pressName}
-                        </span>
-                      </span>
-                      <span
-                        className="shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
-                        aria-hidden="true"
-                      >
-                        ↗
-                      </span>
-                    </a>
-                  </li>
                 </ul>
               </div>
             </Reveal>

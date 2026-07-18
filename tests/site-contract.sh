@@ -299,9 +299,9 @@ assert_contains "components/Procedures.tsx" "procedure.image"
 assert_contains "components/Procedures.tsx" "procedure.imagePosition"
 assert_contains "components/Procedures.tsx" 'procedure.imageFit === "contain"'
 assert_contains "components/Procedures.tsx" "procedure-card-image"
-assert_count "data/site.ts" 'image: "/img/procedure-' "6"
-assert_count "data/site.ts" 'imagePosition:' "6"
-assert_count "data/site.ts" "imageFit:" "6"
+assert_count "data/site.ts" 'image: "/img/procedure-' "7"
+assert_count "data/site.ts" 'imagePosition:' "7"
+assert_count "data/site.ts" "imageFit:" "7"
 assert_matches "data/site.ts" 'image: "/img/procedure-tavi\.webp",\s+imagePosition: "[^"]+",\s+imageFit: "contain"'
 assert_matches "data/site.ts" 'image: "/img/procedure-ivus\.webp",\s+imagePosition: "[^"]+",\s+imageFit: "contain"'
 assert_count "data/site.ts" 'image: "/img/procedure-myclip.webp"' "1"
@@ -310,6 +310,7 @@ assert_count "data/site.ts" 'image: "/img/procedure-angioplasty.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-ivus.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-paravalvular.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-pulmonary-embolism.webp"' "1"
+assert_count "data/site.ts" 'image: "/img/procedure-pacemaker.png"' "1"
 assert_contains "components/Procedures.tsx" "overflow-x-auto"
 assert_contains "components/Procedures.tsx" "AutoScrollRail"
 assert_contains "components/Procedures.tsx" "auto-scroll-procedures"
@@ -352,13 +353,15 @@ assert_raster_image "public/img/procedure-angioplasty.webp"
 assert_raster_image "public/img/procedure-ivus.webp"
 assert_raster_image "public/img/procedure-paravalvular.webp"
 assert_raster_image "public/img/procedure-pulmonary-embolism.webp"
-assert_unique_files "6" \
+assert_raster_image "public/img/procedure-pacemaker.png"
+assert_unique_files "7" \
   "public/img/procedure-myclip.webp" \
   "public/img/procedure-tavi.webp" \
   "public/img/procedure-angioplasty.webp" \
   "public/img/procedure-ivus.webp" \
   "public/img/procedure-paravalvular.webp" \
-  "public/img/procedure-pulmonary-embolism.webp"
+  "public/img/procedure-pulmonary-embolism.webp" \
+  "public/img/procedure-pacemaker.png"
 
 # Secondary portrait, videos, and editorial cards stay clean and uniform.
 assert_contains "components/About.tsx" 'src="/img/dr-manuel-espinoza-cutout.webp"'

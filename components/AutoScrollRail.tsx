@@ -60,7 +60,6 @@ export default function AutoScrollRail({
 
     let frame = 0;
     let previousTime = 0;
-    let direction = 1;
     let visible = false;
     let documentVisible = !document.hidden;
     let maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
@@ -90,14 +89,10 @@ export default function AutoScrollRail({
       previousTime = time;
 
       if (delta > 0 && maxScroll > 1) {
-        const next = viewport.scrollLeft + direction * delta * 0.03;
+        const next = viewport.scrollLeft + delta * 0.03;
 
         if (next >= maxScroll) {
-          viewport.scrollLeft = maxScroll;
-          direction = -1;
-        } else if (next <= 0) {
           viewport.scrollLeft = 0;
-          direction = 1;
         } else {
           viewport.scrollLeft = next;
         }

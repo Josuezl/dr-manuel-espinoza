@@ -37,6 +37,15 @@ export const procedures = [
       "Corrección de la insuficiencia mitral con un clip implantado por catéter, sin cirugía abierta. Primer procedimiento de este tipo realizado en Honduras.",
   },
   {
+    icon: "HeartPulse",
+    image: "/img/procedure-pacemaker.png",
+    imagePosition: "50% 46%",
+    imageFit: "cover",
+    name: "Implante de marcapasos",
+    description:
+      "Colocación de un dispositivo de estimulación cardíaca para tratar alteraciones del ritmo lento y de la conducción, con seguimiento y programación personalizada.",
+  },
+  {
     icon: "ScanHeart",
     image: "/img/procedure-tavi.webp",
     imagePosition: "50% 50%",

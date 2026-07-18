@@ -115,7 +115,7 @@ export default function Hero() {
           initial={reduce ? false : { opacity: 0, scale: 0.9, y: 45 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 1.05, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-20 -mb-24 h-[31rem] w-[min(116vw,38rem)] max-w-none justify-self-center self-end sm:-mb-28 sm:h-[39rem] sm:w-[min(110vw,44rem)] md:mb-0 md:h-[44rem] xl:pointer-events-none xl:absolute xl:inset-x-0 xl:bottom-0 xl:mx-auto xl:h-[calc(100%-4rem)] xl:w-[min(68vw,68rem)]"
+          className="relative z-20 -mb-24 h-[31rem] w-[min(116vw,38rem)] max-w-none justify-self-center self-end sm:-mb-28 sm:h-[39rem] sm:w-[min(110vw,44rem)] md:mb-0 md:h-[44rem] xl:pointer-events-none xl:absolute xl:bottom-0 xl:right-[12%] xl:h-[calc(100%-4rem)] xl:w-[min(68vw,68rem)]"
         >
           <Image
             src="/img/dr-manuel-espinoza-cutout.webp"

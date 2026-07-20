@@ -98,14 +98,29 @@ assert_count() {
   fi
 }
 
+read_image_metadata() {
+  local path="$1"
+
+  node --input-type=module - "$path" <<'NODE'
+import sharp from "sharp";
+
+const metadata = await sharp(process.argv[2]).metadata();
+printfMetadata(metadata);
+
+function printfMetadata({ width, height, hasAlpha }) {
+  process.stdout.write(`${width ?? 0} ${height ?? 0} ${hasAlpha ? "yes" : "no"}\n`);
+}
+NODE
+}
+
 assert_raster_image() {
   local path="$1"
   local width
   local height
+  local alpha
 
   assert_file "$path"
-  width="$(sips -g pixelWidth "$path" 2>/dev/null | awk '/pixelWidth:/ { print $2 }')"
-  height="$(sips -g pixelHeight "$path" 2>/dev/null | awk '/pixelHeight:/ { print $2 }')"
+  read -r width height alpha < <(read_image_metadata "$path")
 
   if [[ -z "$width" || -z "$height" || "$width" -le 0 || "$height" -le 0 ]]; then
     printf 'Expected readable raster image: %s\n' "$path" >&2
@@ -119,10 +134,10 @@ assert_image_dimensions() {
   local expected_height="$3"
   local width
   local height
+  local alpha
 
   assert_raster_image "$path"
-  width="$(sips -g pixelWidth "$path" 2>/dev/null | awk '/pixelWidth:/ { print $2 }')"
-  height="$(sips -g pixelHeight "$path" 2>/dev/null | awk '/pixelHeight:/ { print $2 }')"
+  read -r width height alpha < <(read_image_metadata "$path")
 
   if [[ "$width" != "$expected_width" || "$height" != "$expected_height" ]]; then
     printf 'Expected %s to be %sx%s, found %sx%s\n' \
@@ -146,10 +161,12 @@ assert_unique_files() {
 
 assert_alpha_image() {
   local path="$1"
+  local width
+  local height
   local alpha
 
   assert_file "$path"
-  alpha="$(sips -g hasAlpha "$path" 2>/dev/null | awk '/hasAlpha:/ { print $2 }')"
+  read -r width height alpha < <(read_image_metadata "$path")
 
   if [[ "$alpha" != "yes" ]]; then
     printf 'Expected image with alpha channel: %s\n' "$path" >&2

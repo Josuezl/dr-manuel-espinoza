@@ -18,6 +18,7 @@ const sourceSans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://drmanuelespinoza.com"),
   title: `${doctor.shortName} | Cardiología Intervencionista · San Pedro Sula`,
   description:
     "Cardiólogo intervencionista y de cardiopatía estructural en San Pedro Sula, Honduras. Líder del primer procedimiento MyClip (reparación mitral percutánea) del país. Agenda tu cita en línea.",

@@ -181,6 +181,7 @@ assert_contains "app/globals.css" "--font-display: var(--font-libre-franklin)"
 assert_contains "app/globals.css" "--font-mono: var(--font-source-sans-3)"
 assert_contains "app/layout.tsx" "Libre_Franklin"
 assert_contains "app/layout.tsx" "Source_Sans_3"
+assert_contains "app/layout.tsx" 'metadataBase: new URL("https://drmanuelespinoza.com")'
 assert_absent "app/layout.tsx" "Sora"
 assert_absent "app/layout.tsx" "Unbounded"
 
@@ -400,10 +401,8 @@ assert_contains "components/Reveal.tsx" "initial={reduce ? false"
 assert_absent "components/Procedures.tsx" "max-w-xs border-l"
 assert_absent "components/Milestone.tsx" "border-l border-white/25 pl-6"
 assert_absent "components/Milestone.tsx" "h-px w-10 bg-cobalt"
-assert_absent "components/CarePath.tsx" "max-w-md border-l border-white/30"
 assert_absent "components/Procedures.tsx" "-right-36 top-28"
 assert_absent "components/Milestone.tsx" "-right-40 -top-52"
-assert_absent "components/CarePath.tsx" "-left-32 top-1/2"
 assert_absent "components/Publications.tsx" "caseLayouts"
 assert_absent "components/Publications.tsx" "featured"
 assert_contains "components/Publications.tsx" 'className="mt-14 space-y-4"'

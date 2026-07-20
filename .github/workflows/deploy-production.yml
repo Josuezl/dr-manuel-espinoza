@@ -1,0 +1,143 @@
+name: Deploy production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, deploy, and verify
+    runs-on: macos-latest
+    environment: production
+    timeout-minutes: 20
+
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      HEALTHCHECK_HOST: drmanuelespinoza.com
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          package-manager-cache: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run site contract
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            brew install ripgrep
+          fi
+          bash tests/site-contract.sh
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Build static export
+        run: |
+          npm run build
+          test -f out/index.html
+
+      - name: Configure repository SSH key
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          SSH_KEY="$RUNNER_TEMP/deploy_key"
+          KNOWN_HOSTS="$RUNNER_TEMP/known_hosts"
+          printf '%s\n' "$VPS_SSH_KEY" > "$SSH_KEY"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$KNOWN_HOSTS"
+          chmod 600 "$SSH_KEY" "$KNOWN_HOSTS"
+          ssh-keygen -F "$VPS_HOST" -f "$KNOWN_HOSTS" >/dev/null
+
+      - name: Transfer compiled release
+        run: |
+          SSH_KEY="$RUNNER_TEMP/deploy_key"
+          KNOWN_HOSTS="$RUNNER_TEMP/known_hosts"
+          SSH_OPTIONS=(
+            -i "$SSH_KEY"
+            -p "$VPS_PORT"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+            -o UserKnownHostsFile="$KNOWN_HOSTS"
+          )
+          release="$DEPLOY_PATH/releases/$GITHUB_SHA"
+          incoming="$DEPLOY_PATH/releases/.incoming-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+
+          if ssh "${SSH_OPTIONS[@]}" "$VPS_USER@$VPS_HOST" \
+            "test -d '$release'"; then
+            printf 'Release %s already exists; reusing it\n' "$GITHUB_SHA"
+          else
+            COPYFILE_DISABLE=1 tar --no-xattrs -C out -czf - . |
+              ssh "${SSH_OPTIONS[@]}" "$VPS_USER@$VPS_HOST" \
+                "set -eu; mkdir '$incoming'; tar -xzf - -C '$incoming'; mv '$incoming' '$release'"
+          fi
+
+      - name: Activate release and run health check
+        run: |
+          SSH_KEY="$RUNNER_TEMP/deploy_key"
+          KNOWN_HOSTS="$RUNNER_TEMP/known_hosts"
+          SSH_OPTIONS=(
+            -i "$SSH_KEY"
+            -p "$VPS_PORT"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+            -o UserKnownHostsFile="$KNOWN_HOSTS"
+          )
+
+          ssh "${SSH_OPTIONS[@]}" "$VPS_USER@$VPS_HOST" \
+            "bash -s -- '$DEPLOY_PATH' '$GITHUB_SHA' '$HEALTHCHECK_HOST'" <<'REMOTE_ACTIVATE'
+          set -euo pipefail
+          deploy_path="$1"
+          sha="$2"
+          healthcheck_host="$3"
+          previous=""
+
+          if [[ -L "$deploy_path/current" ]]; then
+            previous="$(readlink "$deploy_path/current")"
+          fi
+
+          ln -sfn "releases/$sha" "$deploy_path/current.next"
+          mv -Tf "$deploy_path/current.next" "$deploy_path/current"
+
+          if ! curl -fsS -o /dev/null -H "Host: $healthcheck_host" http://127.0.0.1/; then
+            if [[ -n "$previous" ]]; then
+              ln -sfn "$previous" "$deploy_path/current.rollback"
+              mv -Tf "$deploy_path/current.rollback" "$deploy_path/current"
+              printf 'Health check failed; rollback restored %s\n' "$previous" >&2
+            else
+              printf 'Health check failed and no previous release exists\n' >&2
+            fi
+            exit 1
+          fi
+
+          printf 'Activated release %s\n' "$sha"
+          printf 'Releases older than the newest five (not deleted):\n'
+          find "$deploy_path/releases" -mindepth 1 -maxdepth 1 -type d \
+            ! -name '.incoming-*' -printf '%T@ %f\n' |
+            sort -nr |
+            tail -n +6 |
+            cut -d' ' -f2- || true
+          REMOTE_ACTIVATE

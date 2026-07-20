@@ -16,7 +16,7 @@ concurrency:
 jobs:
   deploy:
     name: Build, deploy, and verify
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 20
 
@@ -44,11 +44,7 @@ jobs:
         run: npm ci
 
       - name: Run site contract
-        run: |
-          if ! command -v rg >/dev/null 2>&1; then
-            brew install ripgrep
-          fi
-          bash tests/site-contract.sh
+        run: bash tests/site-contract.sh
 
       - name: Run lint
         run: npm run lint

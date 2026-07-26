@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: doctor.name }],
   openGraph: {
-    title: `${doctor.shortName} | Cardiología Intervencionista`,
+    title: "Cardiólogo Intervencionista en San Pedro Sula | Dr. Manuel Espinoza",
     description:
       "Líder del primer MyClip realizado en Honduras. Procedimientos cardíacos mínimamente invasivos en San Pedro Sula.",
     siteName: doctor.shortName,

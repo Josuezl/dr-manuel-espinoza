@@ -84,11 +84,10 @@ export default function Hero() {
             San Pedro Sula · Honduras
           </p>
           <h1 className="mt-5 max-w-xl font-display text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.035em] sm:mt-6 sm:text-[3.25rem] xl:text-[3.75rem]">
-            Cardiología de alta complejidad.
+            Cardiólogo intervencionista y especialista en hemodinamia en San Pedro Sula
           </h1>
           <p className="mt-5 w-full max-w-md text-base leading-7 text-white sm:mt-7 sm:text-[1.125rem] sm:leading-8">
-            Intervenciones mínimamente invasivas para enfermedad coronaria y
-            cardiopatía estructural, guiadas por imagen y evidencia.
+            Cardiología de alta complejidad con procedimientos mínimamente invasivos.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2 sm:mt-8 sm:gap-3">

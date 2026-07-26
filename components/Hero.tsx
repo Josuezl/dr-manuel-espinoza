@@ -83,7 +83,7 @@ export default function Hero() {
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white sm:text-xs">
             San Pedro Sula · Honduras
           </p>
-          <h1 className="mt-5 max-w-xl font-display text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.035em] sm:mt-6 sm:text-[3.25rem] xl:text-[3.75rem]">
+          <h1 className="mt-5 max-w-xl font-display text-[1.75rem] font-semibold leading-[1.15] tracking-[-0.025em] sm:mt-6 sm:text-[2.25rem] xl:text-[2.65rem]">
             Cardiólogo intervencionista y especialista en hemodinamia en San Pedro Sula
           </h1>
           <p className="mt-5 w-full max-w-md text-base leading-7 text-white sm:mt-7 sm:text-[1.125rem] sm:leading-8">

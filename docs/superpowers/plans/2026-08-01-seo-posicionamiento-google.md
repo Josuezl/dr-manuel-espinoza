@@ -1009,6 +1009,22 @@ git commit -m "refactor(seo): generar el JSON-LD desde constructores testeados"
 
 El NAP tiene que ser **texto visible**, no solo JSON-LD. Google contrasta ambos, y los pacientes necesitan poder llamar.
 
+**Antes de nada, reconciliar los nombres de las sedes.** `data/site.ts` tiene un arreglo `clinics` que describe las mismas dos sedes que `sedes` en `data/seo.ts`, y **ya divergieron**: `site.ts` dice `"Consultorio CNA"` y `seo.ts` dice `"Centro de Neumología y Alergias (CNA)"`. `Appointments` renderiza el primero y `Contact` renderizará el segundo, así que el sitio mostraría dos nombres para el mismo lugar — justo la inconsistencia de NAP que este trabajo busca eliminar.
+
+Corrección: `data/site.ts` deja de tener sus propios datos de sede y deriva de `sedes`:
+
+```ts
+import { sedes } from "./seo";
+
+export const clinics = sedes.map((sede) => ({
+  name: sede.name,
+  city: sede.locality,
+  bookingUrl: sede.bookingUrl,
+}));
+```
+
+El nombre correcto es el de `seo.ts`: coincide con el rótulo real del consultorio y es el que debe ir en la ficha de Google. Hay que ajustar las aserciones del contrato que fijan las URLs de CloudMed (líneas ~464-465) si el cambio las mueve, y verificar que `Appointments` sigue renderizando igual.
+
 - [ ] **Step 1: Escribir las aserciones que fallan**
 
 ```bash

@@ -494,4 +494,13 @@ assert_absent "components" "MediNexa"
 assert_contains "app/layout.tsx" 'canonical: "/"'
 assert_absent "app/layout.tsx" "keywords:"
 
+# La navegacion funciona desde subpaginas, no solo desde el home.
+assert_contains "data/site.ts" 'href: "/#procedimientos"'
+assert_contains "data/site.ts" 'href: "/#sobre-mi"'
+assert_contains "data/site.ts" 'href: "/#noticias"'
+assert_contains "data/site.ts" 'href: "/#videos"'
+assert_contains "data/site.ts" 'href: "/#publicaciones"'
+assert_contains "components/Header.tsx" 'href="/#citas"'
+assert_absent "components/Header.tsx" 'href="#citas"'
+
 printf 'Site redesign contract passed.\n'

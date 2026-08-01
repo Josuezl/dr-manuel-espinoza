@@ -174,9 +174,9 @@ export const videos = [
 ];
 
 export const nav = [
-  { label: "Procedimientos", href: "#procedimientos" },
-  { label: "Perfil", href: "#sobre-mi" },
-  { label: "Hito clínico", href: "#noticias" },
-  { label: "Educación", href: "#videos" },
-  { label: "Evidencia", href: "#publicaciones" },
+  { label: "Procedimientos", href: "/#procedimientos" },
+  { label: "Perfil", href: "/#sobre-mi" },
+  { label: "Hito clínico", href: "/#noticias" },
+  { label: "Educación", href: "/#videos" },
+  { label: "Evidencia", href: "/#publicaciones" },
 ];

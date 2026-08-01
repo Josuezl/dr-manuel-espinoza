@@ -519,4 +519,14 @@ assert_absent "components/Header.tsx" 'href="#inicio"'
 assert_contains "components/Header.tsx" 'href="/#citas"'
 assert_absent "components/Header.tsx" 'href="#citas"'
 
+# NAP: fuente unica, con los datos reales de las dos sedes.
+assert_file "data/seo.ts"
+assert_contains "data/seo.ts" "Residencial Altavista, Calle 24"
+assert_contains "data/seo.ts" "Hospital del Valle, Condominios 1, Consultorio 402, 4to piso"
+assert_contains "data/seo.ts" "+50425663004"
+assert_contains "data/seo.ts" "+50497745013"
+assert_contains "data/seo.ts" "50494532216"
+assert_contains "data/seo.ts" "Medicina Interna"
+assert_contains "data/seo.ts" "Cardiología Intervencionista"
+
 printf 'Site redesign contract passed.\n'

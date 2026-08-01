@@ -39,7 +39,7 @@ Ya existe: `metadataBase`, title, description, OpenGraph, `sitemap.ts`,
 | 2 | `www.drmanuelespinoza.com` responde 200 en vez de redirigir | `curl` a producción |
 | 3 | `/index.html` responde 200 — tercera copia del home | `curl` a producción |
 | 4 | Sin `<link rel="canonical">` en ninguna ruta | `app/layout.tsx` |
-| 5 | Cero `<h2>` en todo el sitio; salta de `h1` a `h3` | `components/*.tsx` |
+| 5 | ~~Cero `<h2>`~~ — **descartado**: el HTML generado tiene 1 `h1`, 6 `h2` y 16 `h3`. La jerarquía es correcta; `WordsReveal` renderiza `<h2>` por defecto | `out/index.html` |
 | 6 | Sin teléfono ni dirección visibles (NAP ausente) | `components/Footer.tsx` |
 | 7 | JSON-LD sin `telephone`, `geo`, `openingHours`, `sameAs`, `availableService` | `app/layout.tsx:59-80` |
 | 8 | Imágenes de procedimientos con `alt=""` | `components/Procedures.tsx:65` |
@@ -176,15 +176,16 @@ videos, nav), salvo la corrección de las anclas y de las sedes.
 
 ### Correcciones en componentes existentes
 
-- Jerarquía de encabezados: un `<h1>` por página; cada sección del home pasa a
-  `<h2>`; las tarjetas quedan en `<h3>`. Afecta `Procedures`, `About`,
-  `Milestone`, `Videos`, `Publications`, `Appointments`.
+- La jerarquía de encabezados del home ya es correcta (1 `h1`, 6 `h2`, 16 `h3`) y
+  no se toca. `SectionHeading` → `WordsReveal` renderiza `<h2>` por defecto; las
+  páginas nuevas reutilizan ese componente y heredan la jerarquía correcta.
 - `alt` descriptivos en las imágenes de procedimientos.
 - Anclas de navegación: `#procedimientos` → `/#procedimientos` en `data/site.ts`
   y en `Header.tsx`, para que funcionen desde subpáginas.
-- Metadata: agregar `alternates.canonical` por ruta, `twitter`, y
-  `app/opengraph-image.tsx` (1200×630, generada en build con `ImageResponse`).
-  Eliminar `keywords`.
+- Metadata: agregar `alternates.canonical` por ruta y `app/opengraph-image.tsx`
+  (1200×630, generada en build con `ImageResponse`). Eliminar `keywords`.
+  `twitter:card` ya se genera solo a partir del bloque `openGraph`; no hace falta
+  declararlo.
 
 ### Aviso médico (E-E-A-T)
 
@@ -243,9 +244,9 @@ Documento aparte: `docs/seo-tareas-cliente.md`.
 Cuatro fases. Cada una es desplegable por sí sola y deja el sitio mejor que
 antes; no hay un "big bang" al final.
 
-**Fase 1 — Fundamentos (sin cambio visual).** Canonical por ruta, jerarquía de
-encabezados, `alt` descriptivos, anclas `/#seccion`, eliminación de `keywords`,
-Twitter Card y OG image. Cero riesgo visual, beneficio inmediato.
+**Fase 1 — Fundamentos (sin cambio visual).** Canonical por ruta, `alt`
+descriptivos, anclas `/#seccion`, eliminación de `keywords` y OG image dedicada.
+Cero riesgo visual, beneficio inmediato.
 
 **Fase 2 — NAP y datos estructurados.** `data/seo.ts` con las dos sedes,
 `lib/schema.ts`, `components/JsonLd.tsx`, `Physician` enlazado a dos

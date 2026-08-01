@@ -46,20 +46,49 @@ Ya existe: `metadataBase`, title, description, OpenGraph, `sitemap.ts`,
 | 9 | Build de 88 MB: PNG de 2.8 MB y 2.1 MB, dos videos de 19 MB | `du -sh out` |
 | 10 | `keywords` en metadata — señal muerta desde 2009 | `app/layout.tsx:25-34` |
 | 11 | Navegación con anclas simples (`#procedimientos`) que se rompen en subpáginas | `data/site.ts:177-181` |
-| 12 | Posible inconsistencia de sedes: "Consultorio CNA" y "Consultorio Hospital del Valle" podrían ser la misma dirección | `data/site.ts:146-157` |
+| 12 | Las dos sedes solo tienen nombre y ciudad: sin dirección, teléfono ni horarios | `data/site.ts:146-157` |
+| 13 | Especialidades no declaradas: "medicina interna" y "cardiólogo clínico" no aparecen en el sitio | `data/site.ts:4` |
 
 ## Datos del negocio (NAP)
 
-Provistos por el cliente el 2026-08-01, desde el perfil de WhatsApp Business
-"Centro Neurológico y Cardiovascular":
+Provistos por el cliente el 2026-08-01. Son **dos sedes distintas**, cada una con
+su propio contacto.
+
+### Sede 1 — Centro de Neumología y Alergias (CNA)
+
+- **Dirección:** Residencial Altavista, Calle 24, San Pedro Sula, Cortés, Honduras
+- **Teléfono:** +504 2566-3004
+- **Celular:** +504 9774-5013
+- **Email:** ccardiologicosps@gmail.com
+- **Horarios:** pendiente de confirmar
+
+### Sede 2 — Hospital del Valle
 
 - **Dirección:** Hospital del Valle, Condominios 1, Consultorio 402, 4to piso,
   San Pedro Sula, Cortés, Honduras
-- **Teléfono / WhatsApp:** +504 9453-2216
+- **WhatsApp:** +504 9453-2216
 - **Horarios:** lunes a viernes, 11:00–17:00. Sábado y domingo cerrado.
 
-El NAP debe ser idéntico en el sitio, en el schema y en la ficha de Google. Una
-sola fuente de verdad en el código: `data/seo.ts`.
+### Especialidades declaradas
+
+Medicina Interna, Cardiología Clínica y Cardiología Intervencionista. Las tres
+van en `medicalSpecialty` del schema. *Medicina interna* y *cardiólogo clínico*
+son keywords adicionales que hoy el sitio no menciona en ningún lado.
+
+### Consecuencias para el modelado
+
+Dos sedes se modelan como un nodo `Physician` (la persona) enlazado a dos nodos
+`MedicalClinic` mediante `worksFor`, no como una dirección única. Cada clínica
+lleva su propio `PostalAddress`, `telephone` y `openingHoursSpecification`.
+
+El NAP de cada sede debe ser idéntico en el sitio, en el schema y en la ficha de
+Google correspondiente. Una sola fuente de verdad en el código: `data/seo.ts`,
+exportando un arreglo de sedes en lugar de una dirección suelta.
+
+Corrección respecto a la primera lectura de los datos: "CNA" es el Centro de
+Neumología y Alergias, en Residencial Altavista. No está dentro del Hospital del
+Valle. Las dos entradas de `data/site.ts:146-157` son correctas y no deben
+unificarse; lo que falta es completarlas con dirección y teléfono.
 
 ## Arquitectura de contenido
 
@@ -197,9 +226,12 @@ problema por sí solo. No es equivalente, pero es una mitigación aceptable.
 
 Documento aparte: `docs/seo-tareas-cliente.md`.
 
-1. **Crear el Perfil de Empresa en Google** para el Dr. Manuel Espinoza en la
-   dirección del Consultorio 402. Es la acción de mayor impacto para las
-   búsquedas locales. Incluye los datos exactos que deben coincidir con el sitio.
+1. **Crear el Perfil de Empresa en Google.** Es la acción de mayor impacto para
+   las búsquedas locales. Con dos sedes, Google permite una ficha de profesional
+   por cada consultorio donde atiende; se recomienda empezar por la del Hospital
+   del Valle (que ya tiene horarios definidos) y luego la de Altavista. El
+   documento incluye los datos exactos que deben coincidir con el sitio, sede por
+   sede.
 2. **Google Search Console** — verificar el dominio y enviar el sitemap. Sin esto
    no hay forma de medir nada.
 3. **Reseñas de pacientes** en la ficha — el factor de mayor peso en el ranking
@@ -215,9 +247,10 @@ antes; no hay un "big bang" al final.
 encabezados, `alt` descriptivos, anclas `/#seccion`, eliminación de `keywords`,
 Twitter Card y OG image. Cero riesgo visual, beneficio inmediato.
 
-**Fase 2 — NAP y datos estructurados.** `data/seo.ts`, `lib/schema.ts`,
-`components/JsonLd.tsx`, schema `Physician` completo, `components/Contact.tsx`
-con teléfono, dirección, horarios y WhatsApp. Habilita la ficha de Google.
+**Fase 2 — NAP y datos estructurados.** `data/seo.ts` con las dos sedes,
+`lib/schema.ts`, `components/JsonLd.tsx`, `Physician` enlazado a dos
+`MedicalClinic`, y `components/Contact.tsx` mostrando ambas sedes con su
+dirección, teléfono, horarios y WhatsApp. Habilita las fichas de Google.
 
 **Fase 3 — Contenido.** FAQ en el home con `FAQPage` schema, luego las siete
 páginas nuevas con `data/routes.ts`, `ContentPage`, breadcrumbs y sitemap
@@ -244,17 +277,19 @@ y no dependen de que el Dr. apruebe texto nuevo.
 Requieren confirmación del cliente antes o durante la implementación. Ninguno
 bloquea el inicio del trabajo.
 
-1. **Sedes.** ¿"Consultorio CNA" y "Consultorio Hospital del Valle" son la misma
-   dirección (Consultorio 402) o son dos lugares distintos? Si son el mismo, hay
-   que unificarlos en `data/site.ts`. Una dirección inconsistente daña el SEO local.
+1. **Horarios de CNA.** Falta el horario de atención en Residencial Altavista. Sin
+   él, esa sede va al schema sin `openingHoursSpecification`.
 2. **Coordenadas.** 15.53738, -88.01605 son del Hospital del Valle según fuentes
-   públicas. Deben verificarse en Google Maps antes de publicarse en el `geo` del
-   schema. Si no se confirman, se omite `geo` — un dato incorrecto es peor que
-   ninguno.
-3. **Teléfono directo.** El +504 9453-2216 es el WhatsApp compartido de la clínica.
-   Si existe un número directo del consultorio, conviene usarlo como `telephone`
-   principal del schema.
-4. **Aprobación clínica.** El Dr. Espinoza debe revisar y aprobar todo el texto
+   públicas; las de CNA no se han buscado. Ambas deben verificarse en Google Maps
+   antes de publicarse en el `geo` del schema. Si no se confirman, se omite `geo`
+   — un dato incorrecto es peor que ninguno.
+3. **Email público.** ¿Se publica ccardiologicosps@gmail.com en el sitio? Ayuda al
+   schema y a la confianza, pero expone la dirección a spam. Decisión del cliente.
+4. **Nombre de la sede del Hospital del Valle.** El perfil de WhatsApp Business se
+   llama "Centro Neurológico y Cardiovascular". Confirmar si ese es el nombre
+   comercial que debe usarse en el sitio y en la ficha de Google, o si se mantiene
+   "Consultorio Hospital del Valle".
+5. **Aprobación clínica.** El Dr. Espinoza debe revisar y aprobar todo el texto
    médico nuevo (FAQ y páginas de contenido) antes de publicar.
 
 ## Fuentes

@@ -32,6 +32,7 @@ export const procedures = [
     image: "/img/procedure-myclip.webp",
     imagePosition: "50% 38%",
     imageFit: "cover",
+    alt: "Equipo médico con gorro y mascarilla quirúrgicos sostiene y examina un pequeño dispositivo de catéter en el quirófano, con un monitor de ecocardiografía al fondo.",
     name: "Reparación mitral percutánea (MyClip · TEER)",
     description:
       "Corrección de la insuficiencia mitral con un clip implantado por catéter, sin cirugía abierta. Primer procedimiento de este tipo realizado en Honduras.",
@@ -41,6 +42,7 @@ export const procedures = [
     image: "/img/procedure-pacemaker.png",
     imagePosition: "50% 46%",
     imageFit: "cover",
+    alt: "Ilustración médica en 3D del tórax humano que muestra el corazón y los pulmones, con un marcapasos implantado bajo la piel del hombro y su cable conectado hasta el interior del corazón.",
     name: "Implante de marcapasos",
     description:
       "Colocación de un dispositivo de estimulación cardíaca para tratar alteraciones del ritmo lento y de la conducción, con seguimiento y programación personalizada.",
@@ -50,6 +52,7 @@ export const procedures = [
     image: "/img/procedure-tavi.webp",
     imagePosition: "50% 50%",
     imageFit: "contain",
+    alt: "Ilustración médica en 3D de una válvula protésica expansible de malla metálica guiada por catéter hacia el interior de un vaso sanguíneo de gran calibre.",
     name: "TAVI · Implante valvular aórtico",
     description:
       "Reemplazo de la válvula aórtica por vía transcatéter para estenosis aórtica severa, incluida la planificación con tomografía y técnicas para anatomías complejas.",
@@ -59,6 +62,7 @@ export const procedures = [
     image: "/img/procedure-angioplasty.webp",
     imagePosition: "50% 52%",
     imageFit: "cover",
+    alt: "Sala de hemodinamia con un equipo de angiografía de arco en C, camilla de procedimientos y monitores que muestran imágenes vasculares.",
     name: "Angioplastia coronaria compleja",
     description:
       "Tratamiento de la enfermedad coronaria con stents, litotricia intravascular y técnicas avanzadas para lesiones calcificadas y multivaso.",
@@ -68,6 +72,7 @@ export const procedures = [
     image: "/img/procedure-ivus.webp",
     imagePosition: "50% 50%",
     imageFit: "contain",
+    alt: "Diagrama de un stent expandido dentro de una arteria, con varias imágenes de ultrasonido intravascular en corte transversal a lo largo del vaso.",
     name: "Imagen intracoronaria (IVUS · OCT)",
     description:
       "Ultrasonido intravascular y tomografía de coherencia óptica para dimensionar cada lesión y optimizar el resultado de cada stent con precisión milimétrica.",
@@ -77,6 +82,7 @@ export const procedures = [
     image: "/img/procedure-paravalvular.webp",
     imagePosition: "50% 50%",
     imageFit: "cover",
+    alt: "Ilustración médica en 3D de una válvula protésica cardíaca con un pequeño dispositivo de malla metálica siendo colocado mediante catéter junto al anillo de la válvula.",
     name: "Cierre de fugas paravalvulares",
     description:
       "Oclusión percutánea de fugas alrededor de prótesis valvulares, con planificación por tomografía, fusión de imagen e impresión 3D.",
@@ -86,6 +92,7 @@ export const procedures = [
     image: "/img/procedure-pulmonary-embolism.webp",
     imagePosition: "55% 50%",
     imageFit: "cover",
+    alt: "Ilustración médica en 3D de un catéter dentro de un vaso sanguíneo ramificado, con su extremo junto a una masa de color rojo oscuro que obstruye una de las ramas.",
     name: "Tromboembolia pulmonar aguda",
     description:
       "Trombólisis dirigida por catéter asistida por ultrasonido: una alternativa de dosis baja y alta seguridad para la embolia pulmonar de riesgo intermedio y alto.",

@@ -62,8 +62,7 @@ export default function Procedures() {
                       <div className="relative h-52 shrink-0 overflow-hidden bg-ink">
                         <Image
                           src={procedure.image}
-                          alt={`${procedure.name}, procedimiento realizado por el Dr. Manuel Espinoza en San Pedro Sula`}
-                          aria-hidden="true"
+                          alt={procedure.alt}
                           fill
                           loading="lazy"
                           style={{ objectPosition: procedure.imagePosition }}

@@ -317,8 +317,13 @@ assert_contains "components/Procedures.tsx" "procedure.image"
 assert_contains "components/Procedures.tsx" "procedure.imagePosition"
 assert_contains "components/Procedures.tsx" 'procedure.imageFit === "contain"'
 assert_contains "components/Procedures.tsx" "procedure-card-image"
-# Las imagenes de procedimientos son de contenido, no decorativas.
-assert_contains "components/Procedures.tsx" 'alt={`${procedure.name}'
+# Las imagenes de procedimientos son de contenido, no decorativas: el alt vive
+# junto al resto del contenido clinico en data/site.ts, y la imagen ya no se
+# oculta de la accesibilidad con aria-hidden.
+assert_contains "data/site.ts" "alt:"
+assert_count "data/site.ts" "alt:" "7"
+assert_contains "components/Procedures.tsx" "alt={procedure.alt}"
+assert_not_matches "components/Procedures.tsx" '<Image[^>]*aria-hidden'
 assert_count "data/site.ts" 'image: "/img/procedure-' "7"
 assert_count "data/site.ts" 'imagePosition:' "7"
 assert_count "data/site.ts" "imageFit:" "7"

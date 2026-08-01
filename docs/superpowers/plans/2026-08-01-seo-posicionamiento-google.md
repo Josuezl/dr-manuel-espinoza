@@ -12,10 +12,32 @@
 
 ## Global Constraints
 
-- **Node se carga con nvm.** `node` no está en el PATH por defecto. Antes de cualquier comando de node/npm: `export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0`. Node v24.15.0, npm 11.12.1.
+- **Preparar el entorno en CADA shell nuevo.** Ni `node` ni `rg` están en el PATH por defecto, y el contrato necesita los dos. Ejecutar esto antes de cualquier comando de test o build:
+
+  ```bash
+  export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+  export PATH="$HOME/.local/bin:$PATH"
+  ```
+
+  Comprobación: `node -v` → `v24.15.0`, y `bash -c 'rg --version'` → ripgrep con `+pcre2`. Si alguno falla, el contrato reporta un **falso negativo** (`command not found` se lee como aserción fallida), no un problema del código.
 - **Leer los docs de Next antes de escribir código.** `AGENTS.md` lo exige: esta versión difiere del entrenamiento. Los docs están en `node_modules/next/dist/docs/01-app/`.
 - **`output: "export"`.** No hay servidor. Prohibido: Route Handlers, Server Actions, `redirects`/`headers` en `next.config.ts`, ISR, optimización de imágenes con el loader por defecto.
 - **`tests/site-contract.sh` es el contrato del sitio.** Toda modificación de un componente que el contrato asegura debe actualizar el contrato en el **mismo commit**. Se corre con `bash tests/site-contract.sh` y debe terminar en `Site redesign contract passed.`
+- **`rg` (ripgrep) debe estar en el PATH de bash.** El contrato lo usa en cada aserción, incluida `--pcre2`. En CI se instala con `apt-get install ripgrep`. En macOS con Claude Code, `rg` es una función de zsh y **bash no la ve**, así que el contrato falla con `rg: command not found` y reporta un falso negativo. Si eso pasa, crear el shim una vez:
+
+  ```bash
+  mkdir -p "$HOME/.local/bin"
+  cat > "$HOME/.local/bin/rg" <<'SH'
+  #!/usr/bin/env bash
+  _cc_bin="${CLAUDE_CODE_EXECPATH:-}"
+  [[ -x $_cc_bin ]] || _cc_bin="$(command -v claude)"
+  exec -a rg "$_cc_bin" "$@"
+  SH
+  chmod +x "$HOME/.local/bin/rg"
+  export PATH="$HOME/.local/bin:$PATH"
+  ```
+
+  `$HOME/.local/bin` **no** está en el PATH por defecto en esta máquina, así que el `export` es obligatorio en cada shell que corra el contrato (o agregarlo al `~/.zshrc` para que persista). Verificar con `bash -c 'rg --version'`: debe reportar ripgrep con `+pcre2`, que las aserciones `assert_matches` necesitan. Si `rg` ya es un binario real, nada de esto hace falta.
 - **Datos reales, nunca inventados.** El NAP, los teléfonos y los horarios son los del spec. Si falta un dato (horarios de CNA, coordenadas sin verificar), se **omite el campo**; no se rellena con un valor plausible.
 - **Dominio canónico:** `https://drmanuelespinoza.com` (sin `www`).
 - **Idioma:** todo el contenido en español de Honduras. Los commits siguen Conventional Commits, en español, sin tildes en el asunto.

@@ -22,16 +22,9 @@ export const metadata: Metadata = {
   title: "Cardiólogo Intervencionista en San Pedro Sula | Dr. Manuel Espinoza",
   description:
     "Dr. Manuel Espinoza, cardiólogo intervencionista y especialista en hemodinamia en San Pedro Sula, Honduras. Cateterismo, angioplastia, TAVI y cardiopatía estructural. Agenda tu cita.",
-  keywords: [
-    "Dr. Manuel Espinoza",
-    "Cardiólogo San Pedro Sula",
-    "Cardiología Intervencionista Honduras",
-    "MyClip Honduras",
-    "TAVI Honduras",
-    "Insuficiencia mitral",
-    "Angioplastia coronaria",
-    "Hospital del Valle",
-  ],
+  alternates: {
+    canonical: "/",
+  },
   authors: [{ name: doctor.name }],
   openGraph: {
     title: "Cardiólogo Intervencionista en San Pedro Sula | Dr. Manuel Espinoza",

@@ -490,4 +490,8 @@ assert_contains "app/layout.tsx" "lang=\"es\""
 assert_absent "app" "MediNexa"
 assert_absent "components" "MediNexa"
 
+# SEO: canonical declarado y señales muertas eliminadas.
+assert_contains "app/layout.tsx" 'canonical: "/"'
+assert_absent "app/layout.tsx" "keywords:"
+
 printf 'Site redesign contract passed.\n'

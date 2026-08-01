@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { doctor, nav } from "@/data/site";
 
@@ -11,7 +12,7 @@ export default function Header() {
   return (
     <header className="absolute inset-x-0 top-0 z-[70] px-3 pt-3 sm:px-6 sm:pt-5">
       <div className="header-frame relative mx-auto flex h-[4.5rem] max-w-[99rem] items-center text-white xl:pr-[12rem]">
-        <a
+        <Link
           href="/"
           onClick={() => setOpen(false)}
           className="group flex min-h-11 items-center gap-3 rounded-full pr-3"
@@ -37,7 +38,7 @@ export default function Header() {
               Cardiología intervencionista
             </span>
           </span>
-        </a>
+        </Link>
 
         <nav
           className="absolute right-0 hidden items-center xl:flex"
@@ -92,18 +93,18 @@ export default function Header() {
               <ArrowUpRight className="h-4 w-4 text-cobalt" aria-hidden="true" />
             </a>
           ))}
-          <a
+          <Link
             href="/#citas"
             onClick={() => setOpen(false)}
             className="mt-2 flex min-h-12 items-center justify-between rounded-2xl bg-cobalt px-4 text-sm font-semibold text-white"
           >
             Agendar cita
             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-          </a>
+          </Link>
         </nav>
       </div>
 
-      <a
+      <Link
         href="/#citas"
         onClick={() => setOpen(false)}
         aria-label="Agendar cita"
@@ -113,7 +114,7 @@ export default function Header() {
         <span className="ml-3 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-ink transition-transform duration-500 group-hover:-rotate-45">
           <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </span>
-      </a>
+      </Link>
     </header>
   );
 }

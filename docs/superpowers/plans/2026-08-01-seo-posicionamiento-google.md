@@ -131,11 +131,20 @@ for (const [name, re] of Object.entries(checks)) {
 const blocks = [
   ...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs),
 ];
+if (blocks.length === 0) {
+  console.log("json-ld: NO");
+}
 for (const [, raw] of blocks) {
-  const o = JSON.parse(raw);
-  console.log(`json-ld: ${o["@type"]}`);
+  try {
+    const o = JSON.parse(raw);
+    console.log(`json-ld: ${o["@type"]}`);
+  } catch {
+    console.log("json-ld: INVALIDO");
+  }
 }
 ```
+
+Los demás chequeos siempre imprimen `SI` o `NO`; este debe hacer lo mismo. Un bloque ausente que no imprime nada deja pasar el defecto sin señal, y seis tareas posteriores dependen de esta herramienta para verificar el structured data.
 
 - [ ] **Step 2: Comprobar que corre sobre la build actual**
 

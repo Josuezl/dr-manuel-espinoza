@@ -26,7 +26,14 @@ for (const [name, re] of Object.entries(checks)) {
 const blocks = [
   ...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs),
 ];
+if (blocks.length === 0) {
+  console.log("json-ld: NO");
+}
 for (const [, raw] of blocks) {
-  const o = JSON.parse(raw);
-  console.log(`json-ld: ${o["@type"]}`);
+  try {
+    const o = JSON.parse(raw);
+    console.log(`json-ld: ${o["@type"]}`);
+  } catch {
+    console.log("json-ld: INVALIDO");
+  }
 }

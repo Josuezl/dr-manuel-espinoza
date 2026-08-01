@@ -500,6 +500,8 @@ assert_contains "data/site.ts" 'href: "/#sobre-mi"'
 assert_contains "data/site.ts" 'href: "/#noticias"'
 assert_contains "data/site.ts" 'href: "/#videos"'
 assert_contains "data/site.ts" 'href: "/#publicaciones"'
+assert_contains "components/Header.tsx" 'href="/"'
+assert_absent "components/Header.tsx" 'href="#inicio"'
 assert_contains "components/Header.tsx" 'href="/#citas"'
 assert_absent "components/Header.tsx" 'href="#citas"'
 

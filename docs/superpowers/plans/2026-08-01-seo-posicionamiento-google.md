@@ -644,6 +644,18 @@ git commit -m "feat(seo): agregar fuente unica del NAP con las dos sedes"
 - Create: `lib/schema.ts`
 - Create: `tests/schema.test.mjs`
 - Modify: `package.json` (script `test:schema`)
+- Modify: `tsconfig.json` (`allowImportingTsExtensions`)
+
+**Resolución de imports — decidida y verificada antes de empezar, no re-litigar:**
+
+`lib/schema.ts` **no** usa el alias `@/`, a diferencia del resto del código. Motivo: `@/` viene de `paths` en `tsconfig.json`, que Node no lee, y `node:test` falla con `ERR_MODULE_NOT_FOUND`. Pero Node exige la extensión explícita, y `tsc` la rechaza con `TS5097` salvo que se active un flag.
+
+La combinación que funciona en las tres capas:
+
+1. Agregar `"allowImportingTsExtensions": true` a `compilerOptions` en `tsconfig.json` (`noEmit: true` ya está, que es su prerrequisito).
+2. En `lib/schema.ts` y en el test, importar con ruta relativa **y extensión**: `../data/seo.ts`.
+
+Verificado empíricamente en este repo: `npx tsc --noEmit` sin errores, `node --test` en verde, y `npm run build` compila con ese patrón en código bundleado. Los componentes que consumen `lib/schema.ts` siguen usando `@/lib/schema` con normalidad.
 
 **Interfaces:**
 - Consumes: `sedes`, `especialidades`, `perfiles`, `sitio` de `data/seo.ts`
@@ -663,7 +675,12 @@ Crear `tests/schema.test.mjs`. Usa `node:test`, incluido en Node 24 — sin depe
 ```js
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { physicianSchema, clinicSchema, faqSchema, breadcrumbSchema } from "../lib/schema.ts";
+import {
+  physicianSchema,
+  clinicSchema,
+  faqSchema,
+  breadcrumbSchema,
+} from "../lib/schema.ts";
 import { sedes } from "../data/seo.ts";
 
 test("physicianSchema declara las tres especialidades", () => {
@@ -714,12 +731,18 @@ test("breadcrumbSchema numera las posiciones desde 1", () => {
 });
 ```
 
-- [ ] **Step 2: Agregar el script de test a `package.json`**
+- [ ] **Step 2: Activar el flag y agregar el script de test**
 
-Node 24 ejecuta TypeScript sin transpilar mediante `--experimental-strip-types`.
+En `tsconfig.json`, dentro de `compilerOptions`:
 
 ```json
-"test:schema": "node --experimental-strip-types --test tests/schema.test.mjs"
+"allowImportingTsExtensions": true,
+```
+
+En `package.json`, dentro de `scripts`. Node 24 hace type-stripping por defecto: **no** lleva `--experimental-strip-types`.
+
+```json
+"test:schema": "node --test tests/schema.test.mjs"
 ```
 
 - [ ] **Step 3: Correr los tests y verificar que fallan**
@@ -734,7 +757,7 @@ Esperado: falla por no existir `lib/schema.ts`.
 - [ ] **Step 4: Crear `lib/schema.ts`**
 
 ```ts
-import { sedes, especialidades, perfiles, sitio, type Sede } from "@/data/seo";
+import { sedes, especialidades, perfiles, sitio, type Sede } from "../data/seo.ts";
 
 const CLINIC_ID = (sede: Sede) => `${sitio.url}/#${sede.id}`;
 const PHYSICIAN_ID = `${sitio.url}/#physician`;
@@ -834,12 +857,23 @@ export function medicalWebPageSchema(p: {
 npm run test:schema
 ```
 
-Esperado: 7 tests en verde. Si el import con alias `@/` falla en `node:test`, cambiar los imports del archivo de test a rutas relativas (`../data/seo.ts`) y dejar el alias solo en `lib/schema.ts`, que sí pasa por el bundler de Next.
+Esperado: 7 tests en verde.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Confirmar que tsc y la build siguen sanos**
+
+El flag nuevo y la extensión explícita tocan la resolución de módulos, así que hay que comprobar las tres capas, no solo los tests.
 
 ```bash
-git add lib/schema.ts tests/schema.test.mjs package.json
+npx tsc --noEmit
+npm run build
+```
+
+Esperado: ambos sin errores.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add lib/schema.ts tests/schema.test.mjs package.json tsconfig.json
 git commit -m "feat(seo): agregar constructores de JSON-LD con tests"
 ```
 

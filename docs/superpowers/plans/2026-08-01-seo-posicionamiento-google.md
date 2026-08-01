@@ -2706,6 +2706,22 @@ sudo cp -a /etc/nginx/sites-available/drmanuelespinoza.com.bak.<TIMESTAMP> \
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
+**Content-Type de la imagen OpenGraph.** La Task 4 emite `out/opengraph-image` **sin extensión**. nginx resuelve el tipo MIME por extensión, así que un archivo sin ella cae en `default_type` — normalmente `application/octet-stream`. Los crawlers de WhatsApp y Facebook descartan una `og:image` que no llega como `image/*`, que es justo el caso de uso que motivó esa tarea. Hace falta una regla explícita:
+
+```nginx
+location = /opengraph-image {
+    default_type image/png;
+}
+```
+
+Verificar después de aplicarla:
+
+```bash
+curl -sI https://drmanuelespinoza.com/opengraph-image | grep -i content-type
+```
+
+Esperado: `Content-Type: image/png`. Si devuelve `application/octet-stream`, la vista previa al compartir por WhatsApp no muestra imagen.
+
 **Requisito previo:** el certificado TLS debe cubrir tanto `drmanuelespinoza.com` como `www.drmanuelespinoza.com`. Si solo cubre el apex, el navegador rechaza la conexión a `www` por error de certificado **antes** de llegar al redirect. Comprobarlo con:
 
 ```bash

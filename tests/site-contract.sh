@@ -501,6 +501,13 @@ assert_absent "components" "MediNexa"
 assert_contains "app/layout.tsx" 'canonical: "/"'
 assert_absent "app/layout.tsx" "keywords:"
 
+# SEO: imagen OpenGraph dedicada con proporcion 1.91:1 (1200x630), en vez del
+# retrato 4:5 de doctor.photo que las redes recortaban mal.
+assert_file "app/opengraph-image.tsx"
+assert_contains "app/opengraph-image.tsx" "width: 1200"
+assert_contains "app/opengraph-image.tsx" "height: 630"
+assert_absent "app/layout.tsx" "doctor.photo"
+
 # La navegacion funciona desde subpaginas, no solo desde el home.
 assert_contains "data/site.ts" 'href: "/#procedimientos"'
 assert_contains "data/site.ts" 'href: "/#sobre-mi"'

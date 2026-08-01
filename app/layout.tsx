@@ -33,7 +33,6 @@ export const metadata: Metadata = {
     siteName: doctor.shortName,
     locale: "es_HN",
     type: "website",
-    images: [{ url: doctor.photo }],
   },
   robots: { index: true, follow: true },
 };

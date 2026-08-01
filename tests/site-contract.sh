@@ -317,6 +317,8 @@ assert_contains "components/Procedures.tsx" "procedure.image"
 assert_contains "components/Procedures.tsx" "procedure.imagePosition"
 assert_contains "components/Procedures.tsx" 'procedure.imageFit === "contain"'
 assert_contains "components/Procedures.tsx" "procedure-card-image"
+# Las imagenes de procedimientos son de contenido, no decorativas.
+assert_contains "components/Procedures.tsx" 'alt={`${procedure.name}'
 assert_count "data/site.ts" 'image: "/img/procedure-' "7"
 assert_count "data/site.ts" 'imagePosition:' "7"
 assert_count "data/site.ts" "imageFit:" "7"

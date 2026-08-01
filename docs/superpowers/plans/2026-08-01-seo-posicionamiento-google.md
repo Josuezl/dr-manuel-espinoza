@@ -267,9 +267,13 @@ assert_contains "data/site.ts" 'href: "/#sobre-mi"'
 assert_contains "data/site.ts" 'href: "/#noticias"'
 assert_contains "data/site.ts" 'href: "/#videos"'
 assert_contains "data/site.ts" 'href: "/#publicaciones"'
+assert_contains "components/Header.tsx" 'href="/"'
+assert_absent "components/Header.tsx" 'href="#inicio"'
 assert_contains "components/Header.tsx" 'href="/#citas"'
 assert_absent "components/Header.tsx" 'href="#citas"'
 ```
+
+El par del logo importa: `Header.tsx` cambia tres hrefs y sin él, revertir el del logo a `href="#inicio"` pasaría el contrato en silencio. No es vacuo: `href="/"` no puede coincidir dentro de `href="/#citas"` — las cadenas divergen un carácter antes de que termine la aguja.
 
 - [ ] **Step 2: Correr el contrato y verificar que falla**
 

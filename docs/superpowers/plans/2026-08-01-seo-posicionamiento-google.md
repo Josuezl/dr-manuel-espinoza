@@ -347,8 +347,10 @@ Las imágenes de las tarjetas tienen `alt=""`, que le dice al lector de pantalla
 assert_contains "data/site.ts" "alt:"
 assert_count "data/site.ts" "alt:" "7"
 assert_contains "components/Procedures.tsx" "alt={procedure.alt}"
-assert_not_matches "components/Procedures.tsx" '<Image[\s\S]*?aria-hidden'
+assert_not_matches "components/Procedures.tsx" '<Image[^>]*aria-hidden'
 ```
+
+El patrón se limita a `[^>]*` a propósito. Con `[\s\S]*?` la búsqueda cruza el cierre del `<Image>` y coincide con el `aria-hidden` del `<div>` del degradado que viene después, que sí debe conservarlo: la aserción fallaría siempre, hiciera lo que hiciera el código.
 
 - [ ] **Step 2: Correr el contrato y verificar que falla**
 

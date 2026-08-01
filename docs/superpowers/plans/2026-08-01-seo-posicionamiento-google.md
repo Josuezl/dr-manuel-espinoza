@@ -15,9 +15,11 @@
 - **Preparar el entorno en CADA shell nuevo.** Ni `node` ni `rg` están en el PATH por defecto, y el contrato necesita los dos. Ejecutar esto antes de cualquier comando de test o build:
 
   ```bash
-  export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+  export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
   export PATH="$HOME/.local/bin:$PATH"
   ```
+
+  **Los separadores son `;`, no `&&`.** Al cargarse, `nvm.sh` devuelve estado 3 aunque haya funcionado; encadenar con `&&` salta silenciosamente el `nvm use` y `node` queda inaccesible.
 
   Comprobación: `node -v` → `v24.15.0`, y `bash -c 'rg --version'` → ripgrep con `+pcre2`. Si alguno falla, el contrato reporta un **falso negativo** (`command not found` se lee como aserción fallida), no un problema del código.
 - **Leer los docs de Next antes de escribir código.** `AGENTS.md` lo exige: esta versión difiere del entrenamiento. Los docs están en `node_modules/next/dist/docs/01-app/`.

@@ -151,7 +151,7 @@ Los demás chequeos siempre imprimen `SI` o `NO`; este debe hacer lo mismo. Un b
 - [ ] **Step 2: Comprobar que corre sobre la build actual**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 node scripts/audit-html.mjs out/index.html
 ```
 
@@ -223,7 +223,7 @@ Esperado: `Site redesign contract passed.`
 - [ ] **Step 6: Verificar en el HTML generado**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 npm run build
 grep -o 'rel="canonical" href="[^"]*"' out/index.html
 grep -c 'name="keywords"' out/index.html || echo "keywords eliminado (correcto)"
@@ -759,7 +759,7 @@ En `package.json`, dentro de `scripts`. Node 24 hace type-stripping por defecto:
 - [ ] **Step 3: Correr los tests y verificar que fallan**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 npm run test:schema
 ```
 
@@ -2443,7 +2443,7 @@ El build pesa 88 MB. `noticia-myclip.png` son 2.8 MB y `procedure-pacemaker.png`
 `tests/site-contract.sh` ya importa `sharp` pero no está declarada en `package.json`. Depender de una transitiva es frágil.
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 npm install --save-dev sharp
 ```
 
@@ -2740,7 +2740,7 @@ git commit -m "docs(seo): documentar redirecciones nginx y tareas del cliente"
 - [ ] **Step 1: Correr la suite completa**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 bash tests/site-contract.sh
 npm run test:schema
 npx tsc --noEmit

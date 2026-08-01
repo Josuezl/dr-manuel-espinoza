@@ -334,11 +334,20 @@ git commit -m "fix(nav): usar anclas absolutas para que funcionen en subpaginas"
 
 Las imágenes de las tarjetas tienen `alt=""`, que le dice al lector de pantalla y a Google que son decorativas. No lo son: ilustran cada procedimiento.
 
+**El alt describe la imagen, no repite el título.** Cada tarjeta ya muestra `procedure.name` en su `<h3>` y `procedure.description` debajo. Un alt que repita el nombre no aporta nada y se lee dos veces seguidas. El alt debe decir qué se ve en la foto.
+
+**Hay que quitar `aria-hidden="true"` del `<Image>`.** Ese atributo saca al elemento del árbol de accesibilidad, así que el lector de pantalla ignora la imagen y su alt: dejarlo convierte el alt en texto muerto para accesibilidad y contradice el propósito del cambio.
+
+**Regla no negociable sobre el contenido:** las descripciones se escriben mirando cada archivo, y solo dicen lo que se ve. Nada de detalle clínico inventado — ni nombres de dispositivos, ni anatomía, ni hallazgos que no sean visualmente evidentes. Si una imagen no se puede identificar con confianza, se describe en términos genéricos y se marca para que el Dr. Espinoza la revise.
+
 - [ ] **Step 1: Escribir la aserción que falla**
 
 ```bash
 # Las imagenes de procedimientos son de contenido, no decorativas.
-assert_contains "components/Procedures.tsx" 'alt={`${procedure.name}'
+assert_contains "data/site.ts" "alt:"
+assert_count "data/site.ts" "alt:" "7"
+assert_contains "components/Procedures.tsx" "alt={procedure.alt}"
+assert_not_matches "components/Procedures.tsx" '<Image[\s\S]*?aria-hidden'
 ```
 
 - [ ] **Step 2: Correr el contrato y verificar que falla**
@@ -349,13 +358,13 @@ bash tests/site-contract.sh
 
 Esperado: `Expected components/Procedures.tsx to contain: alt={`${procedure.name}`
 
-- [ ] **Step 3: Reemplazar el alt vacío**
+- [ ] **Step 3: Escribir las descripciones y conectarlas**
 
-En `components/Procedures.tsx` línea 65, cambiar `alt=""` por:
+Abrir los siete archivos de `public/img/procedure-*` y describir lo que se ve en cada uno. Agregar un campo `alt` a cada entrada de `procedures` en `data/site.ts`, junto a `image` e `imagePosition`, y extender la interfaz si existe.
 
-```tsx
-alt={`${procedure.name}, procedimiento realizado por el Dr. Manuel Espinoza en San Pedro Sula`}
-```
+En `components/Procedures.tsx`, reemplazar `alt=""` por `alt={procedure.alt}` y **borrar la línea `aria-hidden="true"` del `<Image>`**. El `aria-hidden` del `<div>` del degradado que está debajo sí se queda: ese sí es decorativo.
+
+Las descripciones van en `data/site.ts` y no en el componente porque son contenido, igual que `name` y `description`, y así el Dr. Espinoza puede revisarlas en el mismo archivo donde vive el resto del texto clínico.
 
 - [ ] **Step 4: Correr el contrato y verificar que pasa**
 

@@ -25,6 +25,7 @@
 - **Leer los docs de Next antes de escribir código.** `AGENTS.md` lo exige: esta versión difiere del entrenamiento. Los docs están en `node_modules/next/dist/docs/01-app/`.
 - **`output: "export"`.** No hay servidor. Prohibido: Route Handlers, Server Actions, `redirects`/`headers` en `next.config.ts`, ISR, optimización de imágenes con el loader por defecto.
 - **`tests/site-contract.sh` es el contrato del sitio.** Toda modificación de un componente que el contrato asegura debe actualizar el contrato en el **mismo commit**. Se corre con `bash tests/site-contract.sh` y debe terminar en `Site redesign contract passed.`
+- **`npm run lint` es parte de la verificación de toda tarea que toque componentes.** CI lo corre antes del build (`.github/workflows/deploy-production.yml:55`), así que un error de lint impide el despliegue. Ni el contrato ni `tsc --noEmit` lo detectan.
 - **`rg` (ripgrep) debe estar en el PATH de bash.** El contrato lo usa en cada aserción, incluida `--pcre2`. En CI se instala con `apt-get install ripgrep`. En macOS con Claude Code, `rg` es una función de zsh y **bash no la ve**, así que el contrato falla con `rg: command not found` y reporta un falso negativo. Si eso pasa, crear el shim una vez:
 
   ```bash
@@ -301,6 +302,10 @@ export const nav = [
 
 Cambiar `href="#inicio"` → `href="/"` (línea 15) y las dos ocurrencias de `href="#citas"` → `href="/#citas"` (líneas 96 y 107).
 
+**Los tres enlaces deben pasar de `<a>` a `<Link>` de `next/link`.** Al apuntar a `/`, un `<a>` activa la regla `@next/next/no-html-link-for-pages` y `npm run lint` falla con error. CI corre lint antes del build (`.github/workflows/deploy-production.yml:55`), así que dejarlos como `<a>` impide el despliegue. El `<a>` del Hero no se toca: su ancla es relativa y no dispara la regla.
+
+Correr `npm run lint` como parte de la verificación, no solo el contrato y `tsc`: ninguno de los dos detecta esto.
+
 - [ ] **Step 5: Ajustar el contrato existente**
 
 La línea 208 del contrato asegura `assert_contains "components/Hero.tsx" "href=\"#citas\""`. El Hero vive solo en el home, así que su ancla relativa es correcta y **no se toca**. Verificar que la aserción nueva sobre `Header.tsx` no entre en conflicto: `assert_absent "components/Header.tsx" 'href="#citas"'` usa coincidencia literal, y `href="/#citas"` no contiene `href="#citas"`. Correcto.
@@ -436,8 +441,12 @@ Esperado: `Expected file to exist: app/opengraph-image.tsx`.
 
 `ImageResponse` solo soporta flexbox y un subconjunto de CSS. Nada de `display: grid`.
 
+La primera línea es obligatoria: `opengraph-image` es un Route Handler especializado, y con `output: "export"` la build falla sin ella. Es el mismo idiom que ya usan `app/sitemap.ts` y `app/robots.ts` en este repo.
+
 ```tsx
 import { ImageResponse } from "next/og";
+
+export const dynamic = "force-static";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

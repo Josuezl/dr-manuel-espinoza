@@ -227,7 +227,7 @@ grep -o 'rel="canonical" href="[^"]*"' out/index.html
 grep -c 'name="keywords"' out/index.html || echo "keywords eliminado (correcto)"
 ```
 
-Esperado: `rel="canonical" href="https://drmanuelespinoza.com/"` y ningún `keywords`.
+Esperado: `rel="canonical" href="https://drmanuelespinoza.com"` y ningún `keywords`. **Sin barra final**: con `metadataBase` más `canonical: "/"`, Next 16 emite la URL sin barra, tal como su propio ejemplo documentado. Coincide con lo que emite `app/sitemap.ts`, así que las dos señales concuerdan.
 
 - [ ] **Step 7: Commit**
 

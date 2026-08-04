@@ -1,3 +1,5 @@
+import { sedes } from "./seo";
+
 export const doctor = {
   name: "Dr. Manuel Espinoza Rueda",
   shortName: "Dr. Manuel Espinoza",
@@ -150,18 +152,11 @@ export const publications: Publication[] = [
   },
 ];
 
-export const clinics = [
-  {
-    name: "Consultorio CNA",
-    city: "San Pedro Sula",
-    bookingUrl: "https://app.cloudmedhn.com/agendar/VI1zxrktkCY51u8qw2Vsk-KK",
-  },
-  {
-    name: "Consultorio Hospital del Valle",
-    city: "San Pedro Sula",
-    bookingUrl: "https://app.cloudmedhn.com/agendar/IDyZjY4Py5oOzxmRbRTA8guF",
-  },
-];
+export const clinics = sedes.map((sede) => ({
+  name: sede.name,
+  city: sede.locality,
+  bookingUrl: sede.bookingUrl,
+}));
 
 export const videos = [
   {

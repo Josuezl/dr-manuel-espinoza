@@ -7,6 +7,7 @@ import Milestone from "@/components/Milestone";
 import Videos from "@/components/Videos";
 import Publications from "@/components/Publications";
 import Appointments from "@/components/Appointments";
+import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -22,6 +23,7 @@ export default function Home() {
         <Videos />
         <Publications />
         <Appointments />
+        <Contact />
       </main>
       <Footer />
     </>

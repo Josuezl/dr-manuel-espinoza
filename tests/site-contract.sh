@@ -468,8 +468,15 @@ assert_absent "app/globals.css" ".footer-wordmark"
 
 # Existing factual and booking contracts remain intact.
 assert_contains "data/site.ts" "El primer MyClip de Honduras"
-assert_contains "data/site.ts" "https://app.cloudmedhn.com/agendar/VI1zxrktkCY51u8qw2Vsk-KK"
-assert_contains "data/site.ts" "https://app.cloudmedhn.com/agendar/IDyZjY4Py5oOzxmRbRTA8guF"
+# NAP: site.ts ya no tiene nombre/URL de sede propios -- los deriva de
+# seo.ts, para que Appointments y Footer nunca puedan mostrar un nombre
+# distinto al de Contact y al JSON-LD (la inconsistencia que este cambio
+# corrige: site.ts decia "Consultorio CNA", seo.ts decia el nombre real).
+assert_contains "data/site.ts" 'import { sedes } from "./seo";'
+assert_contains "data/site.ts" "sedes.map"
+assert_absent "data/site.ts" "Consultorio CNA"
+assert_contains "data/seo.ts" "https://app.cloudmedhn.com/agendar/VI1zxrktkCY51u8qw2Vsk-KK"
+assert_contains "data/seo.ts" "https://app.cloudmedhn.com/agendar/IDyZjY4Py5oOzxmRbRTA8guF"
 assert_contains "components/Appointments.tsx" "clinics.map"
 assert_contains "components/Appointments.tsx" "href={clinic.bookingUrl}"
 assert_contains "components/Appointments.tsx" "target=\"_blank\""
@@ -567,5 +574,17 @@ assert_absent "data/seo.ts" "geo:"
 assert_file "components/JsonLd.tsx"
 assert_contains "app/layout.tsx" "physicianSchema"
 assert_absent "app/layout.tsx" '"@type": ["Physician", "MedicalBusiness"]'
+
+# NAP: el dato tiene que ser texto visible en la pagina, no solo JSON-LD --
+# Google contrasta ambos, y el paciente necesita algo que pueda tocar para
+# llamar. Contact no tiene datos propios: los consume de la misma fuente
+# (sedes) que ya usa el JSON-LD, para que nunca puedan divergir.
+assert_file "components/Contact.tsx"
+assert_contains "components/Contact.tsx" 'id="contacto"'
+assert_contains "components/Contact.tsx" "sedes.map"
+assert_contains "components/Contact.tsx" 'href={`tel:${'
+assert_contains "components/Contact.tsx" "https://wa.me/"
+assert_contains "app/page.tsx" "<Contact />"
+assert_precedes "app/page.tsx" "<Appointments />" "<Contact />"
 
 printf 'Site redesign contract passed.\n'

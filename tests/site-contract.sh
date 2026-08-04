@@ -563,4 +563,9 @@ assert_not_matches "data/seo.ts" 'id: "cna"[\s\S]*?hours:[\s\S]*?https://app\.cl
 # el archivo contenga esas cuatro letras por coincidencia.
 assert_absent "data/seo.ts" "geo:"
 
+# El JSON-LD sale de constructores testeados, no de un objeto inline.
+assert_file "components/JsonLd.tsx"
+assert_contains "app/layout.tsx" "physicianSchema"
+assert_absent "app/layout.tsx" '"@type": ["Physician", "MedicalBusiness"]'
+
 printf 'Site redesign contract passed.\n'

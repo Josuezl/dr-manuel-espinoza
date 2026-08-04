@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Libre_Franklin, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { doctor } from "@/data/site";
+import JsonLd from "@/components/JsonLd";
+import { physicianSchema } from "@/lib/schema";
 
 const libreFranklin = Libre_Franklin({
   subsets: ["latin"],
@@ -48,36 +50,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": ["Physician", "MedicalBusiness"],
-    "@id": "https://drmanuelespinoza.com/#physician",
-    name: "Dr. Manuel Espinoza Rueda - Cardiólogo Intervencionista",
-    alternateName: "Dr. Manuel Espinoza",
-    url: "https://drmanuelespinoza.com",
-    image: "https://drmanuelespinoza.com/img/dr-manuel-espinoza.jpg",
-    medicalSpecialty: ["Cardiovascular", "InterventionalCardiology"],
-    description:
-      "Dr. Manuel Espinoza, cardiólogo intervencionista y especialista en hemodinamia en San Pedro Sula, Honduras. Cateterismo, angioplastia, TAVI y cardiopatía estructural.",
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "San Pedro Sula",
-      addressRegion: "Cortés",
-      addressCountry: "HN",
-    },
-    areaServed: {
-      "@type": "AdministrativeArea",
-      name: "San Pedro Sula, Honduras",
-    },
-  };
-
   return (
     <html lang="es" className={`${libreFranklin.variable} ${sourceSans.variable}`}>
       <body className="min-h-screen antialiased">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <JsonLd data={physicianSchema()} />
         {children}
       </body>
     </html>

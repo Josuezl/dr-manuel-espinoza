@@ -525,8 +525,42 @@ assert_contains "data/seo.ts" "Residencial Altavista, Calle 24"
 assert_contains "data/seo.ts" "Hospital del Valle, Condominios 1, Consultorio 402, 4to piso"
 assert_contains "data/seo.ts" "+50425663004"
 assert_contains "data/seo.ts" "+50497745013"
-assert_contains "data/seo.ts" "50494532216"
 assert_contains "data/seo.ts" "Medicina Interna"
 assert_contains "data/seo.ts" "Cardiología Intervencionista"
+
+# NAP: el 50494532216 aparece dos veces (tel del telefono de WhatsApp y el
+# campo whatsapp); fijar el conteo evita que cualquiera de las dos ocurrencias
+# desaparezca sin que el contrato lo note.
+assert_count "data/seo.ts" "50494532216" "2"
+
+# NAP: strings "display" legibles por el paciente (lo que lee y marca), no
+# solo las formas compactas "tel:" que solo respaldan el href.
+assert_contains "data/seo.ts" "+504 2566-3004"
+assert_contains "data/seo.ts" "+504 9774-5013"
+assert_contains "data/seo.ts" "+504 9453-2216"
+
+# NAP: horario y correo de contacto tambien son datos reales que un cambio
+# accidental podria alterar sin que el contrato lo note.
+assert_contains "data/seo.ts" "11:00"
+assert_contains "data/seo.ts" "17:00"
+assert_contains "data/seo.ts" 'days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]'
+assert_contains "data/seo.ts" "ccardiologicosps@gmail.com"
+
+# NAP: CNA no tiene horario publicado (el cliente no lo ha confirmado), asi
+# que el campo "hours" debe estar deliberadamente ausente en su objeto. Un
+# assert_absent "hours" a secas seria incorrecto porque hospital-del-valle si
+# tiene "hours" legitimamente. En vez de acotar la busqueda usando el id de
+# la OTRA sede (que se rompe si el orden de las sedes cambia algun dia), se
+# acota con el propio bookingUrl de CNA -- un valor que vive dentro del mismo
+# objeto sin importar en que posicion del arreglo quede.
+assert_not_matches "data/seo.ts" 'id: "cna"[\s\S]*?hours:[\s\S]*?https://app\.cloudmedhn\.com/agendar/VI1zxrktkCY51u8qw2Vsk-KK'
+
+# NAP: ninguna sede tiene coordenadas "geo" (no estan verificadas contra
+# Google Maps; una coordenada equivocada manda a un paciente al lugar
+# incorrecto). Se busca el literal "geo:" -- con dos puntos, como se escriben
+# el resto de los campos reales (hours:, email:, whatsapp:) -- en vez del
+# string suelto "geo", para no depender de que ninguna otra palabra futura en
+# el archivo contenga esas cuatro letras por coincidencia.
+assert_absent "data/seo.ts" "geo:"
 
 printf 'Site redesign contract passed.\n'

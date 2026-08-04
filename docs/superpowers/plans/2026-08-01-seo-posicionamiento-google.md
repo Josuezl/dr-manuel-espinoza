@@ -1176,6 +1176,30 @@ git commit -m "feat(seo): agregar seccion de contacto con NAP visible"
 
 ---
 
+### Task 8b: Cerrar el nombre de sede en prosa y arreglar reduced-motion
+
+**Files:**
+- Modify: `components/About.tsx`
+- Modify: `components/Reveal.tsx`
+- Modify: `tests/site-contract.sh`
+
+Dos arreglos independientes, un commit cada uno. Ambos salieron de revisiones, no del plan original.
+
+**1. `About.tsx` dice "Consultorio CNA".** La Task 8 hizo que `clinics` derive de `sedes`, pero esa frase es prosa fija. Resultado: la misma página nombra la misma clínica de dos formas — "Consultorio CNA" en About, y "Centro de Neumología y Alergias (CNA)" en Appointments, Contact, Footer y el JSON-LD. Es la inconsistencia de NAP que este plan existe para eliminar, movida de un archivo de datos a un párrafo. Hay que actualizar la frase al nombre canónico y la aserción que la fija (`tests/site-contract.sh` línea ~400) en el mismo commit.
+
+**2. `Reveal` deja contenido invisible con `prefers-reduced-motion: reduce`.** Medido con Chrome headless sobre la build real: cada sección pierde entre 3 y 9 elementos de forma permanente (sobre-mi 7/28, publicaciones 9/71). Causa: `useReducedMotion()` devuelve `null` en el servidor, así que el HTML sale con `opacity:0` inline; en el cliente con reduced-motion, `initial={false}` y `whileInView={undefined}` no dejan ningún destino que revierta ese estado.
+
+Corrección en `components/Reveal.tsx`: con `reduce` activo, dar un destino explícito en vez de `undefined`.
+
+```tsx
+whileInView={reduce ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+transition={reduce ? { duration: 0 } : { duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
+```
+
+El contenido aparece de inmediato, sin animación. Revisar si `WordsReveal` tiene el mismo patrón. Verificar con Chrome headless comparando `no-preference` contra `reduce`: la diferencia debe ser cero.
+
+---
+
 # FASE 3 — Contenido
 
 La fase más larga. **Todo el texto médico requiere aprobación del Dr. Espinoza antes de publicar.**

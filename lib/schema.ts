@@ -4,6 +4,8 @@ const CLINIC_ID = (sede: Sede) => `${sitio.url}/#${sede.id}`;
 const PHYSICIAN_ID = `${sitio.url}/#physician`;
 
 export function clinicSchema(sede: Sede) {
+  const telephone = sede.phones[0]?.tel;
+
   return {
     "@type": "MedicalClinic",
     "@id": CLINIC_ID(sede),
@@ -15,7 +17,7 @@ export function clinicSchema(sede: Sede) {
       addressRegion: sede.region,
       addressCountry: sede.country,
     },
-    telephone: sede.phones[0]?.tel,
+    ...(telephone ? { telephone } : {}),
     ...(sede.email ? { email: sede.email } : {}),
     ...(sede.hours
       ? {

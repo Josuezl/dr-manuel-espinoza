@@ -24,6 +24,11 @@ test("clinicSchema omite horarios cuando no se conocen", () => {
   const cna = sedes.find((s) => s.id === "cna");
   const s = clinicSchema(cna);
   assert.equal(s.openingHoursSpecification, undefined);
+  assert.equal(
+    Object.hasOwn(s, "openingHoursSpecification"),
+    false,
+    "openingHoursSpecification no debe existir como propiedad propia cuando la sede no tiene horario",
+  );
 });
 
 test("clinicSchema incluye horarios cuando existen", () => {
@@ -31,12 +36,47 @@ test("clinicSchema incluye horarios cuando existen", () => {
   const s = clinicSchema(hdv);
   assert.equal(s.openingHoursSpecification[0].opens, "11:00");
   assert.equal(s.openingHoursSpecification[0].closes, "17:00");
+  assert.equal(
+    Object.hasOwn(s, "openingHoursSpecification"),
+    true,
+    "openingHoursSpecification debe existir como propiedad propia cuando la sede tiene horario",
+  );
 });
 
 test("ningun schema emite coordenadas sin verificar", () => {
+  assert.ok(
+    sedes.length > 0,
+    "la prueba requiere al menos una sede real para no pasar en vacio",
+  );
   for (const sede of sedes) {
-    assert.equal(clinicSchema(sede).geo, undefined);
+    const s = clinicSchema(sede);
+    assert.equal(s.geo, undefined);
+    assert.equal(
+      Object.hasOwn(s, "geo"),
+      false,
+      `geo no debe existir como propiedad propia para la sede ${sede.id}`,
+    );
   }
+});
+
+test("clinicSchema omite telephone cuando la sede no tiene telefonos", () => {
+  const sedeSinTelefonos = {
+    id: "sin-telefonos",
+    name: "Sede de prueba sin telefonos",
+    street: "Calle de prueba",
+    locality: "San Pedro Sula",
+    region: "Cortés",
+    country: "HN",
+    phones: [],
+    bookingUrl: "https://example.test/agendar",
+  };
+  const s = clinicSchema(sedeSinTelefonos);
+  assert.equal(s.telephone, undefined);
+  assert.equal(
+    Object.hasOwn(s, "telephone"),
+    false,
+    "telephone no debe existir como propiedad propia cuando phones esta vacio",
+  );
 });
 
 test("faqSchema produce un FAQPage con sus preguntas", () => {

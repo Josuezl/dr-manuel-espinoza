@@ -640,10 +640,13 @@ assert_contains "components/content/ContentPage.tsx" "<h1"
 assert_contains "components/content/ContentPage.tsx" "<h2"
 assert_contains "components/content/ContentPage.tsx" "no sustituye una consulta médica"
 
-# El byline "Revisado por" es una afirmación sobre revisión clínica: no puede cambiar ni desaparecer por accidente.
-assert_contains "components/content/ContentPage.tsx" "Revisado por el Dr. Manuel Espinoza Rueda"
+# El byline "Revisado por" es una afirmación sobre revisión clínica: no puede cambiar ni desaparecer por accidente (la credencial incluida, no solo el nombre).
+assert_contains "components/content/ContentPage.tsx" "Revisado por el Dr. Manuel Espinoza Rueda, cardiólogo intervencionista."
 
 # ContentPage es Server Component: lo importan las 7 páginas de contenido de las tasks 12-15, sin "use client".
 assert_absent "components/content/ContentPage.tsx" '"use client"'
+
+# El slug se normaliza sin barras antes de armar el path: evita URLs con doble barra en el JSON-LD de las 7 paginas si el dato llega con "/".
+assert_contains "components/content/ContentPage.tsx" 'content.slug.replace(/^\/+|\/+$/g, "")'
 
 printf 'Site redesign contract passed.\n'

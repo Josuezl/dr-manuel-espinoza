@@ -63,3 +63,12 @@ export const routes: Route[] = [
     priority: 0.9,
   },
 ];
+
+/** Busca una ruta por su path. Lanza si no existe, nombrando el path buscado. */
+export function getRoute(path: string): Route {
+  const route = routes.find((r) => r.path === path);
+  if (!route) {
+    throw new Error(`Ruta no registrada en data/routes.ts: ${path}`);
+  }
+  return route;
+}

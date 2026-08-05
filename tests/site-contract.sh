@@ -649,4 +649,15 @@ assert_absent "components/content/ContentPage.tsx" '"use client"'
 # El slug se normaliza sin barras antes de armar el path: evita URLs con doble barra en el JSON-LD de las 7 paginas si el dato llega con "/".
 assert_contains "components/content/ContentPage.tsx" 'content.slug.replace(/^\/+|\/+$/g, "")'
 
+# Pagina dedicada a hemodinamia: fija el patron que replican las tasks 13-15.
+assert_file "app/hemodinamia/page.tsx"
+assert_file "data/content/hemodinamia.ts"
+assert_contains "app/hemodinamia/page.tsx" 'canonical: "/hemodinamia"'
+
+# getRoute() reemplaza "routes.find(...)!": si la ruta no existe, el error
+# nombra el path buscado en vez de morir con un TypeError generico. Las 7
+# paginas de contenido de las tasks 12-15 usan este helper, no el find directo.
+assert_contains "data/routes.ts" "export function getRoute"
+assert_contains "app/hemodinamia/page.tsx" 'getRoute("/hemodinamia")'
+
 printf 'Site redesign contract passed.\n'

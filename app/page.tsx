@@ -6,6 +6,7 @@ import About from "@/components/About";
 import Milestone from "@/components/Milestone";
 import Videos from "@/components/Videos";
 import Publications from "@/components/Publications";
+import Faq from "@/components/Faq";
 import Appointments from "@/components/Appointments";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
@@ -22,6 +23,7 @@ export default function Home() {
         <Milestone />
         <Videos />
         <Publications />
+        <Faq />
         <Appointments />
         <Contact />
       </main>

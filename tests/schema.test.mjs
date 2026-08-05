@@ -7,6 +7,7 @@ import {
   breadcrumbSchema,
 } from "../lib/schema.ts";
 import { sedes } from "../data/seo.ts";
+import { escapeJsonLd } from "../lib/jsonld.ts";
 
 test("physicianSchema declara las tres especialidades", () => {
   const s = physicianSchema();
@@ -93,4 +94,25 @@ test("breadcrumbSchema numera las posiciones desde 1", () => {
   ]);
   assert.equal(s.itemListElement[0].position, 1);
   assert.equal(s.itemListElement[1].position, 2);
+});
+
+test("escapeJsonLd impide que un </script> en la respuesta rompa la pagina", () => {
+  const item = {
+    pregunta: "¿Cómo se cierra una etiqueta script?",
+    respuesta: "Con </script> se cerraria la etiqueta antes de tiempo.",
+  };
+  const s = faqSchema([item]);
+  const serialized = escapeJsonLd(s);
+
+  assert.ok(
+    !serialized.includes("</script>"),
+    "el string serializado y escapado no debe contener '</script>' literal",
+  );
+
+  const parsed = JSON.parse(serialized);
+  assert.equal(
+    parsed.mainEntity[0].acceptedAnswer.text,
+    item.respuesta,
+    "JSON.parse del resultado debe devolver el texto original intacto",
+  );
 });

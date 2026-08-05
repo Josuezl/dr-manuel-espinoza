@@ -592,4 +592,44 @@ assert_file "data/routes.ts"
 assert_contains "app/sitemap.ts" "routes.map"
 assert_absent "app/sitemap.ts" 'url: "https://drmanuelespinoza.com",'
 
+# FAQ con structured data para cubrir busquedas informativas.
+assert_file "data/faq.ts"
+assert_file "components/Faq.tsx"
+assert_contains "components/Faq.tsx" "faqSchema"
+assert_contains "components/Faq.tsx" 'id="preguntas"'
+assert_contains "components/Faq.tsx" "<details"
+assert_contains "app/page.tsx" "<Faq />"
+assert_contains "data/faq.ts" "hemodinamia"
+assert_contains "data/faq.ts" "infarto"
+assert_count "data/faq.ts" 'pregunta: "' "10"
+assert_precedes "app/page.tsx" "<Publications />" "<Faq />"
+assert_precedes "app/page.tsx" "<Faq />" "<Appointments />"
+
+# La <summary> es un contenedor flex con chevron: sin esto no hay ninguna
+# senal visual de que la pregunta se puede desplegar (list-none +
+# marker:content-none borran el triangulo nativo sin reemplazarlo).
+assert_contains "components/Faq.tsx" "ChevronDown"
+assert_contains "components/Faq.tsx" 'aria-hidden="true"'
+assert_contains "components/Faq.tsx" "shrink-0"
+assert_contains "components/Faq.tsx" "list-none"
+assert_contains "components/Faq.tsx" "marker:content-none"
+assert_contains "components/Faq.tsx" 'className="group rounded-[1.5rem]'
+
+# El chevron rota al abrir y respeta prefers-reduced-motion con el mismo
+# prefijo motion-safe: que ya usa components/Procedures.tsx.
+assert_contains "components/Faq.tsx" "group-open:rotate-180"
+assert_contains "components/Faq.tsx" "motion-safe:transition-transform"
+
+# Faq.tsx sigue siendo un Server Component: nada de "use client".
+assert_absent "components/Faq.tsx" '"use client"'
+
+# JsonLd escapa cada "<" como la secuencia unicode \\u003c (JSON valido)
+# porque este es el primer JSON-LD que embebe prosa larga y editable por
+# el medico: un </script> dentro del texto cerraria la etiqueta antes de
+# tiempo.
+assert_file "lib/jsonld.ts"
+assert_contains "lib/jsonld.ts" 'replace(/</g, "\\u003c")'
+assert_contains "components/JsonLd.tsx" "escapeJsonLd"
+assert_absent "components/JsonLd.tsx" "JSON.stringify(data) }}"
+
 printf 'Site redesign contract passed.\n'

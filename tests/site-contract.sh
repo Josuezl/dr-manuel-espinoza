@@ -716,4 +716,9 @@ assert_count "app/infarto/page.tsx" "getRoute(" "1"
 # lugar por accidente.
 assert_contains "data/content/infarto.ts" "buscá atención de emergencia"
 
+# Orden deliberado: /infarto puede recibir a alguien con dolor en el pecho ahora mismo; la urgencia va antes que la explicacion a proposito, no por capricho de estilo -- estos assert_precedes evitan que una edicion futura invierta esa cadena sin que el contrato lo note.
+assert_precedes "data/content/infarto.ts" "buscá atención de emergencia" "Qué es un infarto"
+assert_precedes "data/content/infarto.ts" "Señales de alarma" "Qué hacer en los primeros minutos"
+assert_precedes "data/content/infarto.ts" "Qué hacer en los primeros minutos" "Qué es un infarto"
+
 printf 'Site redesign contract passed.\n'

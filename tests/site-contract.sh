@@ -663,11 +663,17 @@ assert_contains "app/hemodinamia/page.tsx" 'getRoute("/hemodinamia")'
 # pagina de contenido: reemplaza el objeto "metadata" inline (con su propio
 # "canonical: ..." literal) que traia el commit anterior. Al vivir en un
 # solo lugar, las tasks 13-15 heredan la forma correcta en vez de copiar un
-# objeto a mano en cada page.tsx.
+# objeto a mano en cada page.tsx. Recibe la Route ya resuelta (no un path)
+# para que la pagina llame a getRoute() una sola vez.
 assert_file "lib/metadata.ts"
 assert_contains "lib/metadata.ts" "export function pageMetadata"
-assert_contains "app/hemodinamia/page.tsx" 'pageMetadata("/hemodinamia")'
-assert_contains "lib/metadata.ts" "alternates: { canonical: path }"
+assert_contains "app/hemodinamia/page.tsx" "pageMetadata(route)"
+assert_contains "lib/metadata.ts" "alternates: { canonical: route.path }"
+
+# getRoute() se llama una sola vez por pagina de contenido: antes tambien
+# se llamaba adentro de pageMetadata (path duplicado), ahora pageMetadata
+# recibe la Route ya resuelta y evita la segunda busqueda.
+assert_count "app/hemodinamia/page.tsx" "getRoute(" "1"
 
 # El openGraph de pageMetadata() declara su propia imagen: sin esto, el
 # openGraph explicito de la pagina reemplaza (no fusiona) el que
@@ -677,5 +683,22 @@ assert_contains "lib/metadata.ts" "alternates: { canonical: path }"
 # la URL real de la imagen, no solo la clave "images", para que un array
 # vacio no deje esta asercion en verde.
 assert_contains "lib/metadata.ts" 'url: "/opengraph-image"'
+
+# getRoute() y pageMetadata() ya tenian aserciones de texto, pero ninguna
+# ejercia la logica real: un getRoute() saboteado para devolver siempre
+# routes[0] (ignorando el path, sin lanzar nunca) dejaba el contrato, tsc,
+# lint y build en verde igual, con el <title> del home filtrandose en
+# /hemodinamia. tests/routes.test.mjs corre esa logica de verdad con
+# node --test (ver npm run test:routes).
+assert_file "tests/routes.test.mjs"
+assert_contains "tests/routes.test.mjs" "getRoute lanza para un path no registrado"
+assert_contains "tests/routes.test.mjs" "err.message.includes(pathInexistente)"
+assert_contains "package.json" '"test:routes": "node --test tests/routes.test.mjs"'
+
+# El test de relacionadas descubre data/content/ en vez de listar archivos
+# a mano (crece solo cuando las tasks 13-15 agreguen paginas) y falla si el
+# directorio aparece vacio en vez de pasar en silencio.
+assert_contains "tests/routes.test.mjs" "readdirSync(contentDir)"
+assert_contains "tests/routes.test.mjs" "la prueba no puede pasar en vacio"
 
 printf 'Site redesign contract passed.\n'

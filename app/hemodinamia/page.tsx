@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/metadata";
 
 const route = getRoute("/hemodinamia");
 
-export const metadata: Metadata = pageMetadata("/hemodinamia");
+export const metadata: Metadata = pageMetadata(route);
 
 export default function Page() {
   return (

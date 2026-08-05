@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
-import { getRoute } from "@/data/routes";
+import type { Route } from "../data/routes.ts";
 
-export function pageMetadata(path: string): Metadata {
-  const route = getRoute(path);
+/**
+ * Arma la metadata (title, description, canonical, openGraph con imagen)
+ * para una pagina de contenido a partir de la Route ya resuelta -- recibe
+ * el objeto en vez de un path para que la pagina llame a getRoute() una
+ * sola vez y lo reutilice aca y en su propio render.
+ */
+export function pageMetadata(route: Route): Metadata {
   return {
     title: route.title,
     description: route.description,
-    alternates: { canonical: path },
+    alternates: { canonical: route.path },
     openGraph: {
       title: route.title,
       description: route.description,
       type: "article",
       locale: "es_HN",
-      url: path,
+      url: route.path,
       images: [
         {
           url: "/opengraph-image",

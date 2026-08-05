@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:schema": "node --test tests/schema.test.mjs"
+    "test:schema": "node --test tests/schema.test.mjs",
+    "test:routes": "node --test tests/routes.test.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",

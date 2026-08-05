@@ -632,4 +632,18 @@ assert_contains "lib/jsonld.ts" 'replace(/</g, "\\u003c")'
 assert_contains "components/JsonLd.tsx" "escapeJsonLd"
 assert_absent "components/JsonLd.tsx" "JSON.stringify(data) }}"
 
+# Las paginas de contenido comparten estructura, breadcrumb y aviso medico.
+assert_file "components/content/ContentPage.tsx"
+assert_contains "components/content/ContentPage.tsx" "breadcrumbSchema"
+assert_contains "components/content/ContentPage.tsx" "medicalWebPageSchema"
+assert_contains "components/content/ContentPage.tsx" "<h1"
+assert_contains "components/content/ContentPage.tsx" "<h2"
+assert_contains "components/content/ContentPage.tsx" "no sustituye una consulta médica"
+
+# El byline "Revisado por" es una afirmación sobre revisión clínica: no puede cambiar ni desaparecer por accidente.
+assert_contains "components/content/ContentPage.tsx" "Revisado por el Dr. Manuel Espinoza Rueda"
+
+# ContentPage es Server Component: lo importan las 7 páginas de contenido de las tasks 12-15, sin "use client".
+assert_absent "components/content/ContentPage.tsx" '"use client"'
+
 printf 'Site redesign contract passed.\n'

@@ -587,4 +587,9 @@ assert_contains "components/Contact.tsx" "https://wa.me/"
 assert_contains "app/page.tsx" "<Contact />"
 assert_precedes "app/page.tsx" "<Appointments />" "<Contact />"
 
+# El sitemap se genera del registro de rutas, no a mano.
+assert_file "data/routes.ts"
+assert_contains "app/sitemap.ts" "routes.map"
+assert_absent "app/sitemap.ts" 'url: "https://drmanuelespinoza.com",'
+
 printf 'Site redesign contract passed.\n'

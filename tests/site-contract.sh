@@ -652,12 +652,30 @@ assert_contains "components/content/ContentPage.tsx" 'content.slug.replace(/^\/+
 # Pagina dedicada a hemodinamia: fija el patron que replican las tasks 13-15.
 assert_file "app/hemodinamia/page.tsx"
 assert_file "data/content/hemodinamia.ts"
-assert_contains "app/hemodinamia/page.tsx" 'canonical: "/hemodinamia"'
 
 # getRoute() reemplaza "routes.find(...)!": si la ruta no existe, el error
 # nombra el path buscado en vez de morir con un TypeError generico. Las 7
 # paginas de contenido de las tasks 12-15 usan este helper, no el find directo.
 assert_contains "data/routes.ts" "export function getRoute"
 assert_contains "app/hemodinamia/page.tsx" 'getRoute("/hemodinamia")'
+
+# pageMetadata() centraliza title/description/canonical/openGraph de cada
+# pagina de contenido: reemplaza el objeto "metadata" inline (con su propio
+# "canonical: ..." literal) que traia el commit anterior. Al vivir en un
+# solo lugar, las tasks 13-15 heredan la forma correcta en vez de copiar un
+# objeto a mano en cada page.tsx.
+assert_file "lib/metadata.ts"
+assert_contains "lib/metadata.ts" "export function pageMetadata"
+assert_contains "app/hemodinamia/page.tsx" 'pageMetadata("/hemodinamia")'
+assert_contains "lib/metadata.ts" "alternates: { canonical: path }"
+
+# El openGraph de pageMetadata() declara su propia imagen: sin esto, el
+# openGraph explicito de la pagina reemplaza (no fusiona) el que
+# app/opengraph-image.tsx aporta al layout raiz -- la metadata se resuelve
+# con shallow merge por segmento, no deep merge -- y ninguna pagina de
+# contenido muestra imagen al compartirse por WhatsApp o Facebook. Se pinnea
+# la URL real de la imagen, no solo la clave "images", para que un array
+# vacio no deje esta asercion en verde.
+assert_contains "lib/metadata.ts" 'url: "/opengraph-image"'
 
 printf 'Site redesign contract passed.\n'

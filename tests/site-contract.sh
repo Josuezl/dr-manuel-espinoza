@@ -701,4 +701,19 @@ assert_contains "package.json" '"test:routes": "node --test tests/routes.test.mj
 assert_contains "tests/routes.test.mjs" "readdirSync(contentDir)"
 assert_contains "tests/routes.test.mjs" "la prueba no puede pasar en vacio"
 
+# Pagina dedicada al infarto: replica el patron que hemodinamia (Task 12)
+# fijo -- getRoute() + pageMetadata(route), sin metadata inline ni
+# "routes.find(...)!".
+assert_file "app/infarto/page.tsx"
+assert_file "data/content/infarto.ts"
+assert_contains "app/infarto/page.tsx" 'getRoute("/infarto")'
+assert_contains "app/infarto/page.tsx" "pageMetadata(route)"
+assert_count "app/infarto/page.tsx" "getRoute(" "1"
+
+# El texto clinico prioriza la accion de emergencia por delante de la
+# explicacion: esta frase es la primera instruccion que recibe alguien con
+# dolor en el pecho leyendo la pagina, y no puede diluirse ni moverse de
+# lugar por accidente.
+assert_contains "data/content/infarto.ts" "buscá atención de emergencia"
+
 printf 'Site redesign contract passed.\n'

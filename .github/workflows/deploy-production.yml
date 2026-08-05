@@ -54,6 +54,9 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Run test suite
+        run: npm run test
+
       - name: Build static export
         run: |
           npm run build

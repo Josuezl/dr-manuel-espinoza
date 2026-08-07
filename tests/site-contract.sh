@@ -736,4 +736,15 @@ assert_contains "app/tavi-valvula-aortica/page.tsx" 'getRoute("/tavi-valvula-aor
 assert_contains "app/tavi-valvula-aortica/page.tsx" "pageMetadata(route)"
 assert_count "app/tavi-valvula-aortica/page.tsx" "getRoute(" "1"
 
+# getRoute() y pageMetadata() solo fijan la RUTA de cada pagina, no el
+# CONTENIDO que renderiza: nada arriba impide que una pagina importe el
+# PageContent de otra (copy-paste del import), y con eso el contrato,
+# tsc, npm test y npm run build seguirian en verde con el h1 y el
+# BreadcrumbList equivocados en produccion. Se pinnea el contenido propio
+# de cada una de las 4 paginas de contenido existentes.
+assert_contains "app/hemodinamia/page.tsx" "content={hemodinamia}"
+assert_contains "app/infarto/page.tsx" "content={infarto}"
+assert_contains "app/angioplastia-coronaria/page.tsx" "content={angioplastiaCoronaria}"
+assert_contains "app/tavi-valvula-aortica/page.tsx" "content={taviValvulaAortica}"
+
 printf 'Site redesign contract passed.\n'

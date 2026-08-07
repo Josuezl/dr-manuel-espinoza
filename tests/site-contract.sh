@@ -721,4 +721,19 @@ assert_precedes "data/content/infarto.ts" "buscá atención de emergencia" "Qué
 assert_precedes "data/content/infarto.ts" "Señales de alarma" "Qué hacer en los primeros minutos"
 assert_precedes "data/content/infarto.ts" "Qué hacer en los primeros minutos" "Qué es un infarto"
 
+# Paginas de angioplastia coronaria y TAVI: mismo patron que hemodinamia
+# (Task 12) e infarto (Task 13) -- getRoute() + pageMetadata(route), sin
+# metadata inline ni "routes.find(...)!".
+assert_file "app/angioplastia-coronaria/page.tsx"
+assert_file "data/content/angioplastia-coronaria.ts"
+assert_contains "app/angioplastia-coronaria/page.tsx" 'getRoute("/angioplastia-coronaria")'
+assert_contains "app/angioplastia-coronaria/page.tsx" "pageMetadata(route)"
+assert_count "app/angioplastia-coronaria/page.tsx" "getRoute(" "1"
+
+assert_file "app/tavi-valvula-aortica/page.tsx"
+assert_file "data/content/tavi-valvula-aortica.ts"
+assert_contains "app/tavi-valvula-aortica/page.tsx" 'getRoute("/tavi-valvula-aortica")'
+assert_contains "app/tavi-valvula-aortica/page.tsx" "pageMetadata(route)"
+assert_count "app/tavi-valvula-aortica/page.tsx" "getRoute(" "1"
+
 printf 'Site redesign contract passed.\n'

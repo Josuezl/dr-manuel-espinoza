@@ -529,6 +529,17 @@ assert_absent "components" "MediNexa"
 assert_contains "app/layout.tsx" 'canonical: "/"'
 assert_absent "app/layout.tsx" "keywords:"
 
+# #14 de la revision final: title y description del home ya no se repiten a
+# mano en app/layout.tsx -- se derivan de getRoute("/") (la misma fuente
+# que ya usa pageMetadata() para las 7 paginas de contenido), para que
+# editar data/routes.ts no pueda dejar el home con metadata vieja en
+# silencio. metadataBase se queda literal: no viene de data/routes.ts.
+assert_contains "app/layout.tsx" 'import { getRoute } from "@/data/routes"'
+assert_contains "app/layout.tsx" "getRoute(\"/\")"
+assert_contains "app/layout.tsx" "title: homeRoute.title"
+assert_contains "app/layout.tsx" "description: homeRoute.description"
+assert_contains "app/layout.tsx" 'metadataBase: new URL("https://drmanuelespinoza.com")'
+
 # SEO: imagen OpenGraph dedicada con proporcion 1.91:1 (1200x630), en vez del
 # retrato 4:5 de doctor.photo que las redes recortaban mal.
 assert_file "app/opengraph-image.tsx"

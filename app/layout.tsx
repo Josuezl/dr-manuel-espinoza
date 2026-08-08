@@ -2,8 +2,15 @@ import type { Metadata, Viewport } from "next";
 import { Libre_Franklin, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { doctor } from "@/data/site";
+import { getRoute } from "@/data/routes";
 import JsonLd from "@/components/JsonLd";
 import { physicianSchema } from "@/lib/schema";
+
+// title y description del home se derivan de data/routes.ts en vez de
+// repetirse a mano: es la misma fuente que ya usa pageMetadata() para las
+// 7 paginas de contenido, asi que si alguien edita routes.ts el home no
+// puede quedar con metadata vieja en silencio.
+const homeRoute = getRoute("/");
 
 const libreFranklin = Libre_Franklin({
   subsets: ["latin"],
@@ -21,9 +28,8 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://drmanuelespinoza.com"),
-  title: "Cardiólogo Intervencionista en San Pedro Sula | Dr. Manuel Espinoza",
-  description:
-    "Dr. Manuel Espinoza, cardiólogo intervencionista y especialista en hemodinamia en San Pedro Sula, Honduras. Cateterismo, angioplastia, TAVI y cardiopatía estructural. Agenda tu cita.",
+  title: homeRoute.title,
+  description: homeRoute.description,
   alternates: {
     canonical: "/",
   },

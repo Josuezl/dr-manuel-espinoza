@@ -78,7 +78,7 @@ export default function ContentPage({
                 </a>
               ) : null}
               <Link
-                href="/#contacto"
+                href="/contacto"
                 className="inline-flex min-h-11 items-center rounded-full border border-white/40 px-5 text-sm font-semibold text-white"
               >
                 Ver consultorios

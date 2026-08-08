@@ -28,7 +28,19 @@ export const milestone = {
   newsImage: "/img/noticia-myclip.webp",
 };
 
-export const procedures = [
+export interface Procedure {
+  icon: string;
+  image: string;
+  imagePosition: string;
+  imageFit: "cover" | "contain";
+  alt: string;
+  name: string;
+  description: string;
+  /** Ruta de la pagina de contenido dedicada, cuando existe. Opcional: no toda tarjeta tiene una pagina propia. */
+  href?: string;
+}
+
+export const procedures: Procedure[] = [
   {
     icon: "HeartPulse",
     image: "/img/procedure-myclip.webp",
@@ -38,6 +50,7 @@ export const procedures = [
     name: "Reparación mitral percutánea (MyClip · TEER)",
     description:
       "Corrección de la insuficiencia mitral con un clip implantado por catéter, sin cirugía abierta. Primer procedimiento de este tipo realizado en Honduras.",
+    href: "/reparacion-mitral-myclip",
   },
   {
     icon: "HeartPulse",
@@ -48,6 +61,7 @@ export const procedures = [
     name: "Implante de marcapasos",
     description:
       "Colocación de un dispositivo de estimulación cardíaca para tratar alteraciones del ritmo lento y de la conducción, con seguimiento y programación personalizada.",
+    href: "/marcapasos",
   },
   {
     icon: "ScanHeart",
@@ -58,6 +72,7 @@ export const procedures = [
     name: "TAVI · Implante valvular aórtico",
     description:
       "Reemplazo de la válvula aórtica por vía transcatéter para estenosis aórtica severa, incluida la planificación con tomografía y técnicas para anatomías complejas.",
+    href: "/tavi-valvula-aortica",
   },
   {
     icon: "Route",
@@ -68,6 +83,7 @@ export const procedures = [
     name: "Angioplastia coronaria compleja",
     description:
       "Tratamiento de la enfermedad coronaria con stents, litotricia intravascular y técnicas avanzadas para lesiones calcificadas y multivaso.",
+    href: "/angioplastia-coronaria",
   },
   {
     icon: "Microscope",
@@ -78,6 +94,7 @@ export const procedures = [
     name: "Imagen intracoronaria (IVUS · OCT)",
     description:
       "Ultrasonido intravascular y tomografía de coherencia óptica para dimensionar cada lesión y optimizar el resultado de cada stent con precisión milimétrica.",
+    href: "/angioplastia-coronaria",
   },
   {
     icon: "Crosshair",
@@ -181,4 +198,6 @@ export const nav = [
   { label: "Hito clínico", href: "/#noticias" },
   { label: "Educación", href: "/#videos" },
   { label: "Evidencia", href: "/#publicaciones" },
+  { label: "Infarto", href: "/infarto" },
+  { label: "Contacto", href: "/contacto" },
 ];

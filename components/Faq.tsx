@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { faq } from "@/data/faq";
 import { faqSchema } from "@/lib/schema";
@@ -27,6 +28,14 @@ export default function Faq() {
                   />
                 </summary>
                 <p className="mt-4 text-base leading-7 text-cloud">{item.respuesta}</p>
+                {item.enlace ? (
+                  <Link
+                    href={item.enlace.href}
+                    className="mt-3 inline-block text-sm font-semibold text-cobalt hover:underline"
+                  >
+                    {item.enlace.label}
+                  </Link>
+                ) : null}
               </details>
             </Reveal>
           ))}

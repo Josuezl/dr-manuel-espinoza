@@ -330,12 +330,17 @@ assert_contains "components/Procedures.tsx" "procedure-card-image"
 # junto al resto del contenido clinico en data/site.ts, y la imagen ya no se
 # oculta de la accesibilidad con aria-hidden.
 assert_contains "data/site.ts" "alt:"
-assert_count "data/site.ts" "alt:" "7"
+# 7 objetos de datos + 1 aparicion en la interfaz "Procedure" (agregada para
+# tipar el "href" opcional de C1): "alt:", "imagePosition:" e "imageFit:" son
+# tambien nombres de campo en esa interfaz, asi que su conteo literal sube de
+# 7 a 8. "image: \"/img/procedure-" no colisiona porque la interfaz solo
+# declara "image: string" (sin el prefijo de valor), por eso se queda en 7.
+assert_count "data/site.ts" "alt:" "8"
 assert_contains "components/Procedures.tsx" "alt={procedure.alt}"
 assert_not_matches "components/Procedures.tsx" '<Image[^>]*aria-hidden'
 assert_count "data/site.ts" 'image: "/img/procedure-' "7"
-assert_count "data/site.ts" 'imagePosition:' "7"
-assert_count "data/site.ts" "imageFit:" "7"
+assert_count "data/site.ts" 'imagePosition:' "8"
+assert_count "data/site.ts" "imageFit:" "8"
 assert_matches "data/site.ts" 'image: "/img/procedure-tavi\.webp",\s+imagePosition: "[^"]+",\s+imageFit: "contain"'
 assert_matches "data/site.ts" 'image: "/img/procedure-ivus\.webp",\s+imagePosition: "[^"]+",\s+imageFit: "contain"'
 assert_count "data/site.ts" 'image: "/img/procedure-myclip.webp"' "1"

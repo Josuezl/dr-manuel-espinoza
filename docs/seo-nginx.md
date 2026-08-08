@@ -6,27 +6,44 @@ modifica `/etc/nginx/`, y según `docs/deployment-vps.md` la cuenta `deploy`
 Nginx. Nada de este documento se ejecuta como parte del plan de SEO — se
 documenta para que lo aplique quien tenga los permisos.
 
-**Contexto de secuencia.** `docs/deployment-vps.md` marca el DNS, Certbot,
-la redirección HTTPS y el apagado de Vercel como un *cutover* pendiente,
-sujeto a aprobación explícita y separado del despliegue HTTP ya validado. Los
-bloques con `listen 443 ssl` de este documento (sección 2) **asumen que ese
-cutover ya ocurrió** y que Certbot ya emitió certificado para el VPS. Si
-todavía no pasó, aplicar primero esa migración — estos cambios son sobre el
-Nginx del VPS, no sobre el hosting que sirve el dominio hoy.
+## Antes de tocar nada: confirmar en qué estado está el despliegue
+
+`docs/deployment-vps.md` marca el DNS, Certbot, la redirección a HTTPS y el
+apagado de Vercel como un *cutover* **pendiente**, sujeto a aprobación
+explícita y separado del despliegue HTTP ya validado. Mientras ese cutover
+no esté confirmado, no se puede saber desde este documento si
+`drmanuelespinoza.com` resuelve hoy al VPS o todavía a otro hosting.
+
+**Comprobar esto antes de aplicar cualquier otra cosa de este documento:**
+
+```bash
+dig +short drmanuelespinoza.com
+```
+
+- Si el resultado es `45.55.90.164` (la IP del VPS, ver `docs/deployment-vps.md`):
+  el cutover ya ocurrió y el resto de este documento aplica tal cual.
+- Si el resultado es cualquier otra IP: el dominio todavía se sirve desde
+  otro hosting (probablemente Vercel, que `docs/deployment-vps.md` lista
+  como pendiente de apagar). En ese caso, **los bloques `listen 443 ssl` de
+  la sección 2 no aplican todavía** — hay que completar primero el cutover
+  documentado en `docs/deployment-vps.md`. La sección 1 (`try_files`) y la
+  sección 3 (`opengraph-image`) sí se pueden preparar y probar contra el VPS
+  de antemano, apuntando `curl` directo a su IP con `--resolve` en vez de
+  depender de que el DNS público ya apunte ahí.
 
 Los tres cambios de abajo tienen prioridad distinta:
 
 | # | Cambio | Prioridad |
 |---|---|---|
-| 1 | `try_files` para rutas planas | **CRÍTICA** — sin esto el sitio nuevo está roto |
+| 1 | `try_files` para rutas planas | Verificar primero — si falta, es **CRÍTICA** |
 | 2 | Redirecciones `www` → apex e `/index.html` → `/` | Mejora (SEO: consolida señales de ranking) |
 | 3 | `default_type` de `/opengraph-image` | Mejora (vista previa al compartir) |
 
 ---
 
-## 1. `try_files`: sin esto, las 7 páginas nuevas dan 404 (CRÍTICA)
+## 1. `try_files`: comprobar que las 7 páginas nuevas no den 404
 
-### El problema
+### Por qué hace falta revisar esto
 
 Next 16 con `output: "export"` y **sin** `trailingSlash` emite archivos
 **planos**. Verificado contra el build real (`out/`):
@@ -37,36 +54,60 @@ out/hemodinamia/       ← existe, pero solo tiene payloads .txt de RSC
                           (navegación client-side), NINGÚN index.html
 ```
 
-Nginx sirviendo `out/` como raíz estática, con la regla por defecto
-(`try_files $uri $uri/ =404;` o ninguna regla), busca en este orden para
-`/hemodinamia`:
+Si el `location /` de Nginx no tiene una regla que busque `$uri.html`, la
+resolución por defecto para `/hemodinamia` sería:
 
 1. un archivo llamado `hemodinamia` — no existe
 2. `hemodinamia/index.html` — no existe (esa carpeta solo tiene los `.txt`)
 
-Ninguno de los dos existe, así que responde **404**. Esto afecta a las 7
-páginas de contenido nuevas (`/hemodinamia`, `/infarto`,
-`/angioplastia-coronaria`, `/tavi-valvula-aortica`,
-`/reparacion-mitral-myclip`, `/marcapasos`, `/contacto`) aunque el build esté
-perfecto — el problema es de Nginx, no del código.
+Y respondería **404**. Esto afectaría a las 7 páginas de contenido nuevas
+(`/hemodinamia`, `/infarto`, `/angioplastia-coronaria`,
+`/tavi-valvula-aortica`, `/reparacion-mitral-myclip`, `/marcapasos`,
+`/contacto`) aunque el build esté perfecto — sería un problema de Nginx, no
+del código. De ahí que haya que revisar esto antes que cualquier otra cosa.
 
-> Nota: el bloque original de Nginx de la migración del VPS
-> (`docs/superpowers/plans/2026-07-19-dr-manuel-espinoza-vps-migration.md`,
-> Task 4) ya proponía esta misma regla dentro de `location /`. Puede que ya
-> esté aplicada. No lo asumas — confirmalo con la verificación de la sección
-> 1.3 antes de decidir si hace falta editar algo.
+### 1.1 Qué dice la configuración documentada
 
-### 1.1 La regla
-
-Dentro del bloque `server` que sirve el sitio (`root
-/srv/www/dr-manuel-espinoza/current;`), el `location /` tiene que ser
-exactamente:
+El bloque original de Nginx de la migración del VPS
+(`docs/superpowers/plans/2026-07-19-dr-manuel-espinoza-vps-migration.md:228-231`)
+**ya incluye** esta regla dentro de `location /`:
 
 ```nginx
 location / {
     try_files $uri $uri.html $uri/ =404;
 }
 ```
+
+Si el servidor coincide con esa configuración documentada, esto ya está
+resuelto y no hay nada que aplicar — solo confirmar con 1.2 y 1.5. Esta
+sección solo importa si la configuración viva del servidor **no** coincide
+con lo documentado (edición manual posterior, config distinta a la
+planeada, etc.).
+
+### 1.2 Comprobar qué hay hoy en el servidor
+
+```bash
+grep -n -A2 "location / {" /etc/nginx/sites-available/drmanuelespinoza.com
+```
+
+- Si aparece exactamente `try_files $uri $uri.html $uri/ =404;`: coincide
+  con lo documentado en 1.1. Pasar directo a la verificación 1.5.
+- Si `try_files` no aparece, o aparece sin `$uri.html` (por ejemplo
+  `try_files $uri $uri/ =404;`): falta la pieza que resuelve las rutas
+  planas. Aplicar 1.3.
+
+### 1.3 Si falta: aplicar esto
+
+Dentro del bloque `server` que sirve el sitio (`root
+/srv/www/dr-manuel-espinoza/current;`), dejar el `location /` así:
+
+```nginx
+location / {
+    try_files $uri $uri.html $uri/ =404;
+}
+```
+
+### 1.4 Por qué `$uri.html`, y por qué no `trailingSlash: true`
 
 La pieza que importa es **`$uri.html`**: es la que hace que `/hemodinamia`
 resuelva contra el archivo real, `hemodinamia.html`. Sin ella, Nginx nunca
@@ -75,27 +116,23 @@ existiera una carpeta con `index.html` real (hoy no la hay), y `=404` cierra
 la cadena para que una ruta inexistente no caiga en un comportamiento
 indefinido.
 
-### 1.2 Por qué NO se resuelve con `trailingSlash: true`
-
 La alternativa que evitaría tocar Nginx sería poner `trailingSlash: true` en
 `next.config.ts`: Next generaría `hemodinamia/index.html` en vez de
-`hemodinamia.html`, y el `$uri/` por defecto ya lo encontraría.
+`hemodinamia.html`, y el `$uri/` por defecto ya lo encontraría. **No hacer
+esto.** `trailingSlash: true` cambia las URLs del sitio a `/hemodinamia/`
+(con barra final). Pero el `canonical` de cada página (`lib/metadata.ts`,
+`alternates: { canonical: route.path }`) y el `sitemap.xml`
+(`app/sitemap.ts`, generado desde `data/routes.ts`) ya declaran la versión
+**sin** barra final para las 8 rutas. Cambiar `trailingSlash` significaría
+reescribir todas las URLs canónicas del sitio, el sitemap y el
+`BreadcrumbList` de cada página — para evitar tres líneas de configuración
+de Nginx. Es la solución equivocada aunque sea la más fácil de escribir.
 
-**No hacer esto.** `trailingSlash: true` cambia las URLs del sitio a
-`/hemodinamia/` (con barra final). Pero el `canonical` de cada página
-(`lib/metadata.ts`, `alternates: { canonical: route.path }`) y el
-`sitemap.xml` (`app/sitemap.ts`, generado desde `data/routes.ts`) ya
-declaran la versión **sin** barra final para las 8 rutas. Cambiar
-`trailingSlash` significaría reescribir todas las URLs canónicas del sitio,
-el sitemap y el `BreadcrumbList` de cada página — para evitar tres líneas de
-configuración de Nginx. Es la solución equivocada aunque sea la más fácil de
-escribir.
+### 1.5 La prueba definitiva: las 8 rutas por curl
 
-### 1.3 Verificación: las 8 rutas tienen que dar 200
-
-Esta es **la verificación que hay que correr antes de dar por bueno el
-despliegue** — con o sin cambios, es la prueba de que el sitio nuevo
-funciona en producción:
+Esto zanja el asunto independientemente de lo que diga cualquier
+documento — incluido este. Es **la verificación que hay que correr antes de
+dar por bueno el despliegue**, se haya tocado la configuración o no:
 
 ```bash
 for path in / /hemodinamia /infarto /angioplastia-coronaria \
@@ -119,24 +156,26 @@ Esperado — las 8 líneas en `200`:
 /contacto                    200
 ```
 
-Si alguna ruta distinta de `/` da `404`, falta la regla de la sección 1.1.
+Si alguna ruta distinta de `/` da `404`, falta la regla de la sección 1.3
+(y el `grep` de 1.2 debería haberlo mostrado).
 
 ---
 
 ## 2. Redirecciones de `www` e `/index.html` (mejora)
 
-### El problema, reproducible
+### El problema a comprobar
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://www.drmanuelespinoza.com          # hoy: 200
-curl -s -o /dev/null -w "%{http_code}\n" https://drmanuelespinoza.com/index.html   # hoy: 200
+curl -s -o /dev/null -w "%{http_code}\n" https://www.drmanuelespinoza.com
+curl -s -o /dev/null -w "%{http_code}\n" https://drmanuelespinoza.com/index.html
 ```
 
-Ambas deberían devolver 301. Hoy sirven una copia completa del sitio, y
-Google reparte las señales de ranking entre tres URLs distintas
-(`drmanuelespinoza.com`, `www.drmanuelespinoza.com`,
-`drmanuelespinoza.com/index.html`) en vez de concentrarlas en una sola, el
-dominio canónico sin `www`.
+Lo esperado, si ya existe la redirección, es `301` en las dos. Si cualquiera
+de las dos devuelve `200`, esa URL está sirviendo una copia completa del
+sitio en vez de redirigir, y Google reparte las señales de ranking entre
+tres URLs distintas (`drmanuelespinoza.com`, `www.drmanuelespinoza.com`,
+`drmanuelespinoza.com/index.html`) en vez de concentrarlas en el dominio
+canónico sin `www`. Los bloques de abajo corrigen eso.
 
 ### 2.1 Requisito previo: el certificado debe cubrir `www`
 
@@ -210,17 +249,17 @@ la vista previa al compartir por WhatsApp no muestra imagen.
 
 ---
 
-## Procedimiento seguro para aplicar los tres cambios
+## Procedimiento seguro para aplicar cambios
 
-Aplicar los tres juntos en la misma ventana de mantenimiento, en este orden
-exacto:
+Si 1.2 mostró que falta `try_files`, aplicar ese cambio junto con los de las
+secciones 2 y 3 en la misma ventana de mantenimiento, en este orden exacto:
 
 ```bash
 # 1. Respaldar con fecha
 sudo cp -a /etc/nginx/sites-available/drmanuelespinoza.com \
            /etc/nginx/sites-available/drmanuelespinoza.com.bak.$(date +%Y%m%d-%H%M%S)
 
-# 2. Aplicar los cambios de las secciones 1.1, 2.2, 2.3 y 3 de arriba
+# 2. Aplicar los cambios que hagan falta de las secciones 1.3, 2.2, 2.3 y 3
 
 # 3. Validar la sintaxis. Si esto falla, NO recargar.
 sudo nginx -t
@@ -228,14 +267,14 @@ sudo nginx -t
 # 4. Recargar solo si el paso 3 pasó
 sudo systemctl reload nginx
 
-# 5. Verificar — las 8 rutas de la sección 1.3, más:
+# 5. Verificar — las 8 rutas de la sección 1.5, más:
 curl -s -o /dev/null -w "www:        %{http_code} -> %{redirect_url}\n" https://www.drmanuelespinoza.com
 curl -s -o /dev/null -w "index.html: %{http_code} -> %{redirect_url}\n" https://drmanuelespinoza.com/index.html
 curl -s -o /dev/null -w "apex:       %{http_code}\n" https://drmanuelespinoza.com
 curl -sI https://drmanuelespinoza.com/opengraph-image | grep -i content-type
 ```
 
-Esperado en el paso 5: las 8 rutas de la sección 1.3 en `200`, `www: 301`,
+Esperado en el paso 5: las 8 rutas de la sección 1.5 en `200`, `www: 301`,
 `index.html: 301`, `apex: 200`, y `Content-Type: image/png`.
 
 ## Rollback
@@ -249,7 +288,7 @@ sudo nginx -t && sudo systemctl reload nginx
 ```
 
 Después del rollback, repetir la verificación del paso 5. Si las 8 rutas de
-la sección 1.3 dejan de dar `200` incluso con la configuración anterior
+la sección 1.5 dejan de dar `200` incluso con la configuración anterior
 restaurada, el problema no es de Nginx — revisar el release activo con
 `readlink /srv/www/dr-manuel-espinoza/current` (ver
 `docs/deployment-vps.md`).

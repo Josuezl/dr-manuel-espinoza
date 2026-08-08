@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync } from "node:fs";
+import { readdirSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { routes, getRoute } from "../data/routes.ts";
@@ -8,6 +8,7 @@ import { pageMetadata } from "../lib/metadata.ts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const contentDir = path.join(here, "..", "data", "content");
+const appDir = path.join(here, "..", "app");
 
 test("getRoute devuelve la misma ruta que routes.find para un path registrado", () => {
   const expected = routes.find((r) => r.path === "/hemodinamia");
@@ -93,5 +94,28 @@ test("cada relacionadas[].href en data/content/ corresponde a un path registrado
         `${file}: relacionadas href "${rel.href}" (label "${rel.label}") no corresponde a ningun path en data/routes.ts`,
       );
     }
+  }
+});
+
+test("cada ruta registrada en data/routes.ts tiene su app/<path>/page.tsx", () => {
+  // app/sitemap.ts genera el XML mapeando "routes" directamente: agregar una
+  // ruta al registro la mete en el sitemap sin que exista ninguna pagina, y
+  // con output: "export" el build no falla por una URL del sitemap sin HTML
+  // detras. Este test cierra ese hueco para todas las rutas presentes y
+  // futuras, en vez de depender de assert_file agregados a mano por pagina
+  // en tests/site-contract.sh.
+  for (const route of routes) {
+    const pageFile =
+      route.path === "/"
+        ? path.join(appDir, "page.tsx")
+        : path.join(appDir, route.path, "page.tsx");
+
+    assert.ok(
+      existsSync(pageFile),
+      `data/routes.ts registra "${route.path}" pero no existe ${path.relative(
+        path.join(here, ".."),
+        pageFile,
+      )}`,
+    );
   }
 });

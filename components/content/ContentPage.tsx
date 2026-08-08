@@ -4,6 +4,7 @@ import { sitio, sedes } from "@/data/seo";
 import JsonLd from "@/components/JsonLd";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Breadcrumb from "@/components/content/Breadcrumb";
 
 export interface PageContent {
   /** Segmento de ruta sin barras: el componente arma el path como "/" + slug. */
@@ -38,17 +39,7 @@ export default function ContentPage({
       />
       <main className="bg-frost px-5 pb-20 pt-[7.5rem] sm:px-10 sm:pt-[11rem]">
         <article className="mx-auto max-w-3xl">
-          <nav aria-label="Ruta de navegación" className="text-xs text-cloud">
-            <ol className="flex list-none items-center gap-1.5">
-              <li>
-                <Link href="/" className="hover:text-cobalt">
-                  Inicio
-                </Link>
-              </li>
-              <li aria-hidden="true">·</li>
-              <li aria-current="page">{content.h1}</li>
-            </ol>
-          </nav>
+          <Breadcrumb current={content.h1} />
 
           <h1 className="mt-6 font-display text-[clamp(2rem,4vw,2.9rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-ink">
             {content.h1}

@@ -793,4 +793,16 @@ assert_count "app/contacto/page.tsx" "getRoute(" "1"
 assert_contains "app/contacto/page.tsx" "<Contact />"
 assert_contains "app/contacto/page.tsx" "<h1"
 
+# El breadcrumb ("<nav>/<ol>/<li aria-current>") ya se corrigio una vez para
+# seguir el patron WAI-ARIA. ContentPage.tsx (7 paginas) y app/contacto/page.tsx
+# lo necesitan igual pero /contacto no tiene "secciones" para pasar por
+# PageContent, asi que el marcado vive en un solo componente compartido en vez
+# de copiarse a mano en los dos lugares -- sin esto, un cambio futuro en uno
+# de los dos puede divergir del otro sin que contrato, tsc, npm test ni build
+# lo noten.
+assert_file "components/content/Breadcrumb.tsx"
+assert_contains "components/content/ContentPage.tsx" "<Breadcrumb current={content.h1} />"
+assert_contains "app/contacto/page.tsx" "<Breadcrumb current={h1} />"
+assert_absent "app/contacto/page.tsx" 'aria-label="Ruta de navegación"'
+
 printf 'Site redesign contract passed.\n'

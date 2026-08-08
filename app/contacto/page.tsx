@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Contact from "@/components/Contact";
 import JsonLd from "@/components/JsonLd";
+import Breadcrumb from "@/components/content/Breadcrumb";
 import { breadcrumbSchema, medicalWebPageSchema } from "@/lib/schema";
 import { getRoute } from "@/data/routes";
 import { pageMetadata } from "@/lib/metadata";
@@ -33,17 +33,7 @@ export default function Page() {
       />
       <main className="bg-frost pt-[7.5rem] sm:pt-[11rem]">
         <div className="mx-auto max-w-3xl px-5 sm:px-10">
-          <nav aria-label="Ruta de navegación" className="text-xs text-cloud">
-            <ol className="flex list-none items-center gap-1.5">
-              <li>
-                <Link href="/" className="hover:text-cobalt">
-                  Inicio
-                </Link>
-              </li>
-              <li aria-hidden="true">·</li>
-              <li aria-current="page">{h1}</li>
-            </ol>
-          </nav>
+          <Breadcrumb current={h1} />
           <h1 className="mt-6 font-display text-[clamp(2rem,4vw,2.9rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-ink">
             {h1}
           </h1>

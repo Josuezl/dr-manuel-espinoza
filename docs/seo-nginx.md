@@ -36,7 +36,7 @@ Los tres cambios de abajo tienen prioridad distinta:
 | # | Cambio | Prioridad |
 |---|---|---|
 | 1 | `try_files` para rutas planas | Verificar primero — si falta, es **CRÍTICA** |
-| 2 | Redirecciones `www` → apex e `/index.html` → `/` | Mejora (SEO: consolida señales de ranking) |
+| 2 | Redirecciones `www` → apex e `/index.html` → `/` | La regla de `/index.html` documentada aquí es la corregida: la versión con `location =` produce un **bucle infinito que tumba la portada** (ver 2.3). Aplicada como está, es mejora (SEO: consolida señales de ranking) |
 | 3 | `default_type` de `/opengraph-image` | Mejora (vista previa al compartir) |
 
 ---
@@ -211,15 +211,73 @@ server {
 }
 ```
 
-### 2.3 Regla para `/index.html`
+### 2.3 Regla para `/index.html` — CUIDADO: la forma obvia entra en bucle infinito
 
-Dentro del bloque que sirve el sitio:
+**No usar `location = /index.html { return 301 ...; }`.** Es la forma más
+directa de escribir esta regla, y es la que traía este documento antes de
+esta revisión. Se verificó levantando Nginx 1.31.3 en un contenedor con
+esta config real y el `out/` real: rompe la portada.
+
+```text
+GET /            -> 301  Location: https://drmanuelespinoza.com/
+GET /index.html  -> 301  Location: https://drmanuelespinoza.com/
+```
+
+**Por qué pasa esto.** El bloque `server` sirve el sitio con
+`index index.html;` (explícito o por default de Nginx). Cuando llega una
+petición para `/`, Nginx la resuelve dentro de `location /`
+(`try_files $uri $uri.html $uri/ =404;`): `$uri/` matchea porque el
+directorio raíz existe, y ahí es donde entra el directive `index`, que
+busca `index.html` dentro de ese directorio. Para *encontrarlo*, Nginx hace
+una **reescritura interna** de la petición a `/index.html` — invisible
+para el cliente, pero que **vuelve a evaluar los `location` desde cero**,
+como si fuera una petición nueva. Con `location = /index.html` agregado a
+mano, esa reescritura interna cae justo en ese bloque de match exacto, que
+no sabe que la petición es interna: ve `/index.html` y devuelve un 301 a
+`/`. El cliente originalmente pidió `/`, nunca `/index.html` — pero recibe
+igual ese 301. El navegador sigue la redirección a `/`, Nginx repite
+exactamente el mismo camino interno, y el resultado es un bucle infinito
+(`ERR_TOO_MANY_REDIRECTS`). Una petición directa a `/index.html` cae en el
+mismo bloque por el motivo obvio (coincide literal), así que también
+redirige — pero el problema real es que `/` **también** entra en el bucle,
+y `/` es la URL canónica del sitio entero.
+
+**Agravante:** `curl -fsS` (usado en el health check del pipeline, ver
+`.github/workflows/deploy-production.yml`) no falla ante un 301 — `-f` solo
+distingue 2xx de 4xx/5xx. Un despliegue con esta regla pasaría el health
+check en verde con la home atrapada en un bucle de redirección.
+
+**La regla correcta**, verificada funcionando contra el mismo contenedor:
 
 ```nginx
-location = /index.html {
-    return 301 https://drmanuelespinoza.com/;
+location / {
+    # Comparar contra $request_uri, NUNCA contra el location. A diferencia
+    # de $uri, $request_uri guarda la URI ORIGINAL tal como la mandó el
+    # cliente y no cambia con la reescritura interna que hace el directive
+    # "index" al servir "/". Por eso este "if" solo dispara para una
+    # petición real a /index.html -- nunca para la reescritura interna que
+    # ocurre al servir "/". Tiene que ir ANTES de try_files: si no, cuando
+    # el cliente pida /index.html directo, try_files ya lo habría servido
+    # con 200 antes de llegar acá, y la redirección nunca se aplicaría.
+    if ($request_uri ~ ^/index\.html) {
+        return 301 https://drmanuelespinoza.com/;
+    }
+
+    try_files $uri $uri.html $uri/ =404;
 }
 ```
+
+**Verificación obligatoria antes de dar esto por bueno** (repetir después
+de cualquier cambio en esta sección, no asumir que "compila" alcanza):
+
+```bash
+curl -s -o /dev/null -w "GET /:            %{http_code} -> %{redirect_url}\n" https://drmanuelespinoza.com/
+curl -s -o /dev/null -w "GET /index.html:  %{http_code} -> %{redirect_url}\n" https://drmanuelespinoza.com/index.html
+```
+
+Esperado: `GET /` en `200` (sin `redirect_url`), `GET /index.html` en `301`
+apuntando a `https://drmanuelespinoza.com/`. Si `GET /` devuelve `301`,
+esta sección se rompió de nuevo — no recargar esa config en producción.
 
 ---
 

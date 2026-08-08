@@ -747,4 +747,50 @@ assert_contains "app/infarto/page.tsx" "content={infarto}"
 assert_contains "app/angioplastia-coronaria/page.tsx" "content={angioplastiaCoronaria}"
 assert_contains "app/tavi-valvula-aortica/page.tsx" "content={taviValvulaAortica}"
 
+# Paginas de MyClip y marcapasos: cierran las 8 rutas del registro. Mismo
+# patron que hemodinamia (Task 12), infarto (Task 13) y angioplastia/TAVI
+# (Task 14) -- getRoute() + pageMetadata(route), sin metadata inline ni
+# "routes.find(...)!".
+assert_file "app/reparacion-mitral-myclip/page.tsx"
+assert_file "data/content/reparacion-mitral-myclip.ts"
+assert_contains "app/reparacion-mitral-myclip/page.tsx" 'getRoute("/reparacion-mitral-myclip")'
+assert_contains "app/reparacion-mitral-myclip/page.tsx" "pageMetadata(route)"
+assert_count "app/reparacion-mitral-myclip/page.tsx" "getRoute(" "1"
+
+assert_file "app/marcapasos/page.tsx"
+assert_file "data/content/marcapasos.ts"
+assert_contains "app/marcapasos/page.tsx" 'getRoute("/marcapasos")'
+assert_contains "app/marcapasos/page.tsx" "pageMetadata(route)"
+assert_count "app/marcapasos/page.tsx" "getRoute(" "1"
+
+# getRoute() y pageMetadata() solo fijan la RUTA: nada arriba impide que
+# estas dos paginas importen el PageContent de otra (copy-paste del import),
+# dejando el contrato, tsc, npm test y npm run build en verde con el h1 y el
+# BreadcrumbList equivocados en produccion. Se pinnea el contenido propio de
+# cada una, igual que ya se hace para las 4 paginas existentes arriba.
+assert_contains "app/reparacion-mitral-myclip/page.tsx" "content={reparacionMitralMyclip}"
+assert_contains "app/marcapasos/page.tsx" "content={marcapasos}"
+
+# BUG del plan corregido: "relacionadas" de marcapasos apuntaba a "/#contacto",
+# un ancla del home que no es una ruta registrada en data/routes.ts (la
+# rechazaria tests/routes.test.mjs). Con /contacto ya como pagina propia en
+# esta misma task, el destino correcto es esa ruta.
+assert_contains "data/content/marcapasos.ts" 'href: "/contacto"'
+assert_absent "data/content/marcapasos.ts" "/#contacto"
+
+# Pagina de contacto: reutiliza components/Contact.tsx (Task 8) para que el
+# NAP viva en un solo lugar; agrega el MedicalWebPage y el BreadcrumbList que
+# la seccion homonima del home no lleva. Mismo patron getRoute() +
+# pageMetadata() que las demas paginas de contenido. No usa ContentPage (el
+# contenido no es "secciones" de texto sino el bloque de Contact), asi que
+# se pinnea "<Contact />" como la protección equivalente al "content={...}"
+# de las otras paginas -- lo que impediria que esta pagina renderizara un
+# componente distinto sin que el contrato lo note.
+assert_file "app/contacto/page.tsx"
+assert_contains "app/contacto/page.tsx" 'getRoute("/contacto")'
+assert_contains "app/contacto/page.tsx" "pageMetadata(route)"
+assert_count "app/contacto/page.tsx" "getRoute(" "1"
+assert_contains "app/contacto/page.tsx" "<Contact />"
+assert_contains "app/contacto/page.tsx" "<h1"
+
 printf 'Site redesign contract passed.\n'

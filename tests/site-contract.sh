@@ -84,6 +84,15 @@ assert_file() {
   fi
 }
 
+assert_no_path() {
+  local path="$1"
+
+  if [[ -e "$path" ]]; then
+    printf 'Expected path to NOT exist: %s\n' "$path" >&2
+    exit 1
+  fi
+}
+
 assert_count() {
   local file="$1"
   local value="$2"
@@ -811,5 +820,13 @@ assert_file "components/content/Breadcrumb.tsx"
 assert_contains "components/content/ContentPage.tsx" "<Breadcrumb current={content.h1} />"
 assert_contains "app/contacto/page.tsx" "<Breadcrumb current={h1} />"
 assert_absent "app/contacto/page.tsx" 'aria-label="Ruta de navegación"'
+
+# Todo lo que vive bajo public/ se copia tal cual al build y se sube al VPS en
+# cada deploy, lo referencie alguien o no. Los originales del cliente (41 MB, con
+# los dos videos duplicados de public/video/ adentro) viven ahora en
+# assets-originales/, fuera del build. Si vuelven a public/, el deploy vuelve a
+# cargar 41 MB muertos sin que nada mas lo note.
+assert_no_path "public/Imagenes "
+assert_file "assets-originales/Videos/Video 1.mp4"
 
 printf 'Site redesign contract passed.\n'

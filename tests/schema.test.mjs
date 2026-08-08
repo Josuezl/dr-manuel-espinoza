@@ -21,6 +21,39 @@ test("physicianSchema enlaza las dos sedes", () => {
   assert.equal(s.worksFor.length, 2);
 });
 
+// I4: Physician es subtipo de LocalBusiness -- Google pide address/telephone
+// en el propio nodo, no solo en los MedicalClinic anidados bajo worksFor
+// (esos no son una propiedad que Google use para resultados enriquecidos
+// locales). Los datos vienen de la primera sede real de data/seo.ts (CNA,
+// Altavista), nunca inventados.
+test("physicianSchema incluye address de la sede principal (CNA)", () => {
+  const s = physicianSchema();
+  const cna = sedes.find((sede) => sede.id === "cna");
+  assert.deepEqual(s.address, {
+    "@type": "PostalAddress",
+    streetAddress: cna.street,
+    addressLocality: cna.locality,
+    addressRegion: cna.region,
+    addressCountry: cna.country,
+  });
+});
+
+test("physicianSchema incluye telephone de la sede principal (CNA)", () => {
+  const s = physicianSchema();
+  const cna = sedes.find((sede) => sede.id === "cna");
+  assert.equal(s.telephone, cna.phones[0].tel);
+});
+
+test("physicianSchema no emite geo (coordenadas sin verificar)", () => {
+  const s = physicianSchema();
+  assert.equal(s.geo, undefined);
+  assert.equal(
+    Object.hasOwn(s, "geo"),
+    false,
+    "geo no debe existir como propiedad propia en physicianSchema",
+  );
+});
+
 test("clinicSchema omite horarios cuando no se conocen", () => {
   const cna = sedes.find((s) => s.id === "cna");
   const s = clinicSchema(cna);

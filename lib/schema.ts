@@ -3,6 +3,17 @@ import { sedes, especialidades, perfiles, sitio, type Sede } from "../data/seo.t
 const CLINIC_ID = (sede: Sede) => `${sitio.url}/#${sede.id}`;
 const PHYSICIAN_ID = `${sitio.url}/#physician`;
 
+/** Direccion postal en formato schema.org, sin geo: las coordenadas no estan verificadas. */
+function postalAddressSchema(sede: Sede) {
+  return {
+    "@type": "PostalAddress",
+    streetAddress: sede.street,
+    addressLocality: sede.locality,
+    addressRegion: sede.region,
+    addressCountry: sede.country,
+  };
+}
+
 export function clinicSchema(sede: Sede) {
   const telephone = sede.phones[0]?.tel;
 
@@ -10,13 +21,7 @@ export function clinicSchema(sede: Sede) {
     "@type": "MedicalClinic",
     "@id": CLINIC_ID(sede),
     name: sede.name,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: sede.street,
-      addressLocality: sede.locality,
-      addressRegion: sede.region,
-      addressCountry: sede.country,
-    },
+    address: postalAddressSchema(sede),
     ...(telephone ? { telephone } : {}),
     ...(sede.email ? { email: sede.email } : {}),
     ...(sede.hours
@@ -33,6 +38,16 @@ export function clinicSchema(sede: Sede) {
 }
 
 export function physicianSchema() {
+  // Physician es subtipo de LocalBusiness: la guia de Google para resultados
+  // enriquecidos de negocio local espera address/telephone en el propio
+  // nodo, no solo en los MedicalClinic anidados bajo worksFor. Se toma la
+  // primera sede de data/seo.ts (Centro de Neumologia y Alergias, Altavista)
+  // como sede principal: es la que aparece primero en `sedes`, tiene dos
+  // telefonos y correo (la sede con mas datos de contacto verificados), y es
+  // la primera que se lista en la descripcion de /contacto en data/routes.ts.
+  const principal = sedes[0];
+  const telephone = principal.phones[0]?.tel;
+
   return {
     "@context": "https://schema.org",
     "@type": "Physician",
@@ -47,6 +62,8 @@ export function physicianSchema() {
       "@type": "AdministrativeArea",
       name: "San Pedro Sula, Honduras",
     },
+    address: postalAddressSchema(principal),
+    ...(telephone ? { telephone } : {}),
     worksFor: sedes.map(clinicSchema),
   };
 }

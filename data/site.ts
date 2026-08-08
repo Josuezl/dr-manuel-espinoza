@@ -25,7 +25,7 @@ export const milestone = {
   pressUrl:
     "https://www.laprensa.hn/teinteresa/hospital-valle-realiza-honduras-primer-procedimiento-cardiaco-myclip-GA30564345",
   pressName: "La Prensa",
-  newsImage: "/img/noticia-myclip.png",
+  newsImage: "/img/noticia-myclip.webp",
 };
 
 export const procedures = [
@@ -41,7 +41,7 @@ export const procedures = [
   },
   {
     icon: "HeartPulse",
-    image: "/img/procedure-pacemaker.png",
+    image: "/img/procedure-pacemaker.webp",
     imagePosition: "50% 46%",
     imageFit: "cover",
     alt: "Ilustración médica en 3D del tórax humano que muestra el corazón y los pulmones, con un marcapasos implantado bajo la piel del hombro y su cable conectado hasta el interior del corazón.",
@@ -161,14 +161,14 @@ export const clinics = sedes.map((sede) => ({
 export const videos = [
   {
     src: "/video/video-1.mp4",
-    poster: "/img/video-1-poster.png",
+    poster: "/img/video-1-poster.webp",
     title: "Tratamiento percutáneo de la insuficiencia de la válvula mitral",
     description:
       "Cómo se corrige la insuficiencia de la válvula mitral por catéter, sin cirugía abierta: la técnica detrás del primer MyClip de Honduras.",
   },
   {
     src: "/video/video-2.mp4",
-    poster: "/img/video-2-poster.png",
+    poster: "/img/video-2-poster.webp",
     title: "Cardiopatías isquémicas",
     description:
       "Lo que el paciente con cardiopatía isquémica debe saber: cómo se estudia y se trata la enfermedad de las arterias coronarias.",

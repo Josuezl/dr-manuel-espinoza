@@ -10,7 +10,8 @@
     "lint": "eslint",
     "test": "node --test tests/*.test.mjs",
     "test:schema": "node --test tests/schema.test.mjs",
-    "test:routes": "node --test tests/routes.test.mjs"
+    "test:routes": "node --test tests/routes.test.mjs",
+    "optimize:images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",
@@ -27,6 +28,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "puppeteer-core": "^25.3.0",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

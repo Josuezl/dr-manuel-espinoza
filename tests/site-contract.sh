@@ -335,7 +335,7 @@ assert_count "data/site.ts" 'image: "/img/procedure-angioplasty.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-ivus.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-paravalvular.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-pulmonary-embolism.webp"' "1"
-assert_count "data/site.ts" 'image: "/img/procedure-pacemaker.png"' "1"
+assert_count "data/site.ts" 'image: "/img/procedure-pacemaker.webp"' "1"
 assert_contains "components/Procedures.tsx" "overflow-x-auto"
 assert_contains "components/Procedures.tsx" "AutoScrollRail"
 assert_contains "components/Procedures.tsx" "auto-scroll-procedures"
@@ -378,7 +378,7 @@ assert_raster_image "public/img/procedure-angioplasty.webp"
 assert_raster_image "public/img/procedure-ivus.webp"
 assert_raster_image "public/img/procedure-paravalvular.webp"
 assert_raster_image "public/img/procedure-pulmonary-embolism.webp"
-assert_raster_image "public/img/procedure-pacemaker.png"
+assert_raster_image "public/img/procedure-pacemaker.webp"
 assert_unique_files "7" \
   "public/img/procedure-myclip.webp" \
   "public/img/procedure-tavi.webp" \
@@ -386,7 +386,12 @@ assert_unique_files "7" \
   "public/img/procedure-ivus.webp" \
   "public/img/procedure-paravalvular.webp" \
   "public/img/procedure-pulmonary-embolism.webp" \
-  "public/img/procedure-pacemaker.png"
+  "public/img/procedure-pacemaker.webp"
+
+# Las imagenes pesadas se sirven en WebP: con output: export el navegador
+# descarga el archivo fuente tal cual, sin optimizacion de Next.
+assert_file "scripts/optimize-images.mjs"
+assert_contains "data/site.ts" "/img/procedure-pacemaker.webp"
 
 # Secondary portrait, videos, and editorial cards stay clean and uniform.
 assert_contains "components/About.tsx" 'src="/img/dr-manuel-espinoza-cutout.webp"'
@@ -416,8 +421,8 @@ assert_contains "components/Videos.tsx" "flex flex-1 flex-col px-2 pb-2 text-lef
 assert_absent "components/Videos.tsx" "video.label"
 assert_absent "data/site.ts" "label: \"Video 0"
 assert_count "data/site.ts" 'poster: "/img/video-' "2"
-assert_raster_image "public/img/video-1-poster.png"
-assert_raster_image "public/img/video-2-poster.png"
+assert_raster_image "public/img/video-1-poster.webp"
+assert_raster_image "public/img/video-2-poster.webp"
 assert_absent "components/Videos.tsx" "lg:mt-24"
 assert_absent "components/Videos.tsx" "1.15fr"
 assert_absent "components/Reveal.tsx" "if (reduce)"
@@ -468,6 +473,8 @@ assert_absent "app/globals.css" ".footer-wordmark"
 
 # Existing factual and booking contracts remain intact.
 assert_contains "data/site.ts" "El primer MyClip de Honduras"
+assert_raster_image "public/img/noticia-myclip.webp"
+assert_contains "data/site.ts" "/img/noticia-myclip.webp"
 # NAP: site.ts ya no tiene nombre/URL de sede propios -- los deriva de
 # seo.ts, para que Appointments y Footer nunca puedan mostrar un nombre
 # distinto al de Contact y al JSON-LD (la inconsistencia que este cambio

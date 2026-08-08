@@ -829,4 +829,14 @@ assert_absent "app/contacto/page.tsx" 'aria-label="Ruta de navegación"'
 assert_no_path "public/Imagenes "
 assert_file "assets-originales/Videos/Video 1.mp4"
 
+# Medido con Chrome headless sobre el build real: con preload="metadata" el
+# navegador se bajaba los DOS videos enteros al cargar el home -- 38.521 KB de
+# video y 40.672 KB de pagina, antes de que el visitante tocara nada. Con
+# preload="none" son 0 peticiones de .mp4 y 2.151 KB de pagina, y el video
+# sigue reproduciendo al presionar play. El poster ya estaba, asi que la
+# tarjeta se ve igual. No volver a "metadata" ni a "auto".
+assert_contains "components/Videos.tsx" 'preload="none"'
+assert_absent "components/Videos.tsx" 'preload="metadata"'
+assert_absent "components/Videos.tsx" 'preload="auto"'
+
 printf 'Site redesign contract passed.\n'

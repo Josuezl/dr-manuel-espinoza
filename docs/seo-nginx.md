@@ -25,19 +25,20 @@ dig +short drmanuelespinoza.com
 - Si el resultado es cualquier otra IP: el dominio todavía se sirve desde
   otro hosting (probablemente Vercel, que `docs/deployment-vps.md` lista
   como pendiente de apagar). En ese caso, **los bloques `listen 443 ssl` de
-  la sección 2 no aplican todavía** — hay que completar primero el cutover
-  documentado en `docs/deployment-vps.md`. La sección 1 (`try_files`) y la
-  sección 3 (`opengraph-image`) sí se pueden preparar y probar contra el VPS
-  de antemano, apuntando `curl` directo a su IP con `--resolve` en vez de
-  depender de que el DNS público ya apunte ahí.
+  la sección 3 no aplican todavía** — hay que completar primero el cutover
+  documentado en `docs/deployment-vps.md`. La sección 1 (`try_files`), la
+  sección 2 (barra final) y la sección 4 (`opengraph-image`) sí se pueden
+  preparar y probar contra el VPS de antemano, apuntando `curl` directo a su
+  IP con `--resolve` en vez de depender de que el DNS público ya apunte ahí.
 
-Los tres cambios de abajo tienen prioridad distinta:
+Los cambios de abajo tienen prioridad distinta:
 
 | # | Cambio | Prioridad |
 |---|---|---|
 | 1 | `try_files` para rutas planas | Verificar primero — si falta, es **CRÍTICA** |
-| 2 | Redirecciones `www` → apex e `/index.html` → `/` | La regla de `/index.html` documentada aquí es la corregida: la versión con `location =` produce un **bucle infinito que tumba la portada** (ver 2.3). Aplicada como está, es mejora (SEO: consolida señales de ranking) |
-| 3 | `default_type` de `/opengraph-image` | Mejora (vista previa al compartir) |
+| 2 | Redirección 301 de rutas con `/` final | **IMPORTANTE** — hoy dan 403, Google lo trata como bloqueo |
+| 3 | Redirecciones `www` → apex e `/index.html` → `/` | La regla de `/index.html` documentada aquí es la corregida: la versión con `location =` produce un **bucle infinito que tumba la portada** (ver 3.3). Aplicada como está, es mejora (SEO: consolida señales de ranking) |
+| 4 | `default_type` de `/opengraph-image` | Mejora (vista previa al compartir) |
 
 ---
 
@@ -128,11 +129,14 @@ reescribir todas las URLs canónicas del sitio, el sitemap y el
 `BreadcrumbList` de cada página — para evitar tres líneas de configuración
 de Nginx. Es la solución equivocada aunque sea la más fácil de escribir.
 
-### 1.5 La prueba definitiva: las 8 rutas por curl
+### 1.5 La prueba definitiva: las 8 rutas por curl, planas y con barra final
 
 Esto zanja el asunto independientemente de lo que diga cualquier
 documento — incluido este. Es **la verificación que hay que correr antes de
-dar por bueno el despliegue**, se haya tocado la configuración o no:
+dar por bueno el despliegue**, se haya tocado la configuración o no. Incluye
+también la variante con `/` final de cada ruta (salvo la home, que ya es
+`/`): esa variante es la que cubre la sección 2 de este documento, así que
+esta misma batería sirve para verificar ambos cambios a la vez.
 
 ```bash
 for path in / /hemodinamia /infarto /angioplastia-coronaria \
@@ -141,9 +145,17 @@ for path in / /hemodinamia /infarto /angioplastia-coronaria \
   printf '%-28s %s\n' "$path" \
     "$(curl -s -o /dev/null -w '%{http_code}' "https://drmanuelespinoza.com$path")"
 done
+
+for path in /hemodinamia/ /infarto/ /angioplastia-coronaria/ \
+            /tavi-valvula-aortica/ /reparacion-mitral-myclip/ \
+            /marcapasos/ /contacto/; do
+  printf '%-28s %s -> %s\n' "$path" \
+    "$(curl -s -o /dev/null -w '%{http_code}' "https://drmanuelespinoza.com$path")" \
+    "$(curl -s -o /dev/null -w '%{redirect_url}' "https://drmanuelespinoza.com$path")"
+done
 ```
 
-Esperado — las 8 líneas en `200`:
+Esperado — las 8 rutas planas en `200`:
 
 ```text
 /                            200
@@ -159,9 +171,84 @@ Esperado — las 8 líneas en `200`:
 Si alguna ruta distinta de `/` da `404`, falta la regla de la sección 1.3
 (y el `grep` de 1.2 debería haberlo mostrado).
 
+Esperado — las 7 rutas con barra final en `301`, redirigiendo a la versión
+sin barra:
+
+```text
+/hemodinamia/                301 -> https://drmanuelespinoza.com/hemodinamia
+/infarto/                    301 -> https://drmanuelespinoza.com/infarto
+/angioplastia-coronaria/     301 -> https://drmanuelespinoza.com/angioplastia-coronaria
+/tavi-valvula-aortica/       301 -> https://drmanuelespinoza.com/tavi-valvula-aortica
+/reparacion-mitral-myclip/   301 -> https://drmanuelespinoza.com/reparacion-mitral-myclip
+/marcapasos/                 301 -> https://drmanuelespinoza.com/marcapasos
+/contacto/                   301 -> https://drmanuelespinoza.com/contacto
+```
+
+Si alguna da `403`, falta la regla de la sección 2.2.
+
 ---
 
-## 2. Redirecciones de `www` e `/index.html` (mejora)
+## 2. Barra final: las rutas con `/` al final dan 403 (importante)
+
+### El problema a comprobar
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://drmanuelespinoza.com/hemodinamia/
+```
+
+Verificado contra el build real y la configuración documentada en la
+sección 1: da **403**, no 404. Google trata un 403 como bloqueo activo del
+rastreador, distinto de un 404 (página que simplemente no existe) — es peor
+para el SEO del sitio que un 404 sobre la misma URL.
+
+### 2.1 Por qué da 403 y no 404
+
+`out/hemodinamia/` existe como carpeta (ver sección 1), pero solo contiene
+los payloads `.txt` de navegación RSC — **ningún `index.html`**. Al pedir
+`/hemodinamia/`, `try_files $uri $uri.html $uri/ =404;` evalúa `$uri/`:
+la carpeta existe, así que Nginx la toma como un directorio servible e
+intenta aplicarle el `index` directive (buscar un `index.html` dentro).
+No lo encuentra, y con `autoindex off` (el valor por defecto, y lo correcto
+en producción: listar el contenido de una carpeta es una fuga de
+información), Nginx no tiene nada que devolver más que un **403 Forbidden**
+— la página cruda de error de Nginx, no una página del sitio. `=404` en
+`try_files` no ayuda acá: esa cláusula solo se dispara si **ninguna** de
+las opciones anteriores existe ni como archivo ni como directorio, y
+`$uri/` sí existe como directorio.
+
+### 2.2 La regla: redirigir la barra final a la versión canónica
+
+Dentro del bloque `server`, **antes** del `location /` de la sección 1
+(las regex-location de Nginx se evalúan en el orden en que aparecen en el
+archivo, y antes que el `location /` de prefijo por defecto):
+
+```nginx
+location ~ ^(/.+)/$ {
+    return 301 https://drmanuelespinoza.com$1;
+}
+```
+
+`^(/.+)/$` exige al menos un carácter entre las dos barras, así que **no
+matchea `/` sola** (verificado por el revisor: `GET /` sigue devolviendo
+`200` con esta regla activa). El grupo capturado `$1` es la ruta sin la
+barra final, que es exactamente la que ya usan el `canonical` de cada
+página y el `sitemap.xml` — por eso el redirect no crea una segunda URL
+canónica, consolida en la única que ya existe.
+
+### 2.3 Por qué esto no reintroduce el bucle de la sección 3
+
+Esta regla es un `location` con match por **regex** (`~`), distinto de un
+`location = /index.html` con match **exacto**. El bucle de la sección 3.3
+ocurre porque una reescritura interna del directive `index` genera una URI
+que coincide con un match exacto agregado a mano. Acá no hay ningún
+directive interno de Nginx que agregue una barra final a una URI que no la
+tenía: la única forma de que `$request_uri` termine en `/` es que el
+cliente la haya pedido así. No hay reescritura interna que dispare esta
+regla por accidente.
+
+---
+
+## 3. Redirecciones de `www` e `/index.html`
 
 ### El problema a comprobar
 
@@ -177,7 +264,7 @@ tres URLs distintas (`drmanuelespinoza.com`, `www.drmanuelespinoza.com`,
 `drmanuelespinoza.com/index.html`) en vez de concentrarlas en el dominio
 canónico sin `www`. Los bloques de abajo corrigen eso.
 
-### 2.1 Requisito previo: el certificado debe cubrir `www`
+### 3.1 Requisito previo: el certificado debe cubrir `www`
 
 Si el certificado TLS solo cubre el apex, el navegador rechaza la conexión a
 `www` por error de certificado **antes** de llegar al redirect. Comprobar
@@ -194,7 +281,7 @@ Si falta `www` en el resultado, ampliar el certificado antes de continuar:
 sudo certbot --expand -d drmanuelespinoza.com -d www.drmanuelespinoza.com
 ```
 
-### 2.2 Bloque de redirección de `www`
+### 3.2 Bloque de redirección de `www`
 
 Servidor propio, separado del que sirve el sitio:
 
@@ -211,7 +298,7 @@ server {
 }
 ```
 
-### 2.3 Regla para `/index.html` — CUIDADO: la forma obvia entra en bucle infinito
+### 3.3 Regla para `/index.html` — CUIDADO: la forma obvia entra en bucle infinito
 
 **No usar `location = /index.html { return 301 ...; }`.** Es la forma más
 directa de escribir esta regla, y es la que traía este documento antes de
@@ -267,6 +354,12 @@ location / {
 }
 ```
 
+El mecanismo es el mismo motivo por el que la sección 2 (barra final) no
+tiene este problema: un `if` sobre `$request_uri` sólo mira lo que pidió el
+cliente, nunca lo que Nginx reescribe internamente. Un `location = ...` en
+cambio no distingue entre una petición real y una reescritura interna que
+casualmente termina con la misma URI — y esa es exactamente la trampa.
+
 **Verificación obligatoria antes de dar esto por bueno** (repetir después
 de cualquier cambio en esta sección, no asumir que "compila" alcanza):
 
@@ -281,7 +374,7 @@ esta sección se rompió de nuevo — no recargar esa config en producción.
 
 ---
 
-## 3. `Content-Type` de la imagen OpenGraph (mejora)
+## 4. `Content-Type` de la imagen OpenGraph (mejora)
 
 `app/opengraph-image.tsx` emite `out/opengraph-image` **sin extensión** (es
 un PNG de 1200×630, verificado con `file out/opengraph-image`). Nginx
@@ -310,14 +403,20 @@ la vista previa al compartir por WhatsApp no muestra imagen.
 ## Procedimiento seguro para aplicar cambios
 
 Si 1.2 mostró que falta `try_files`, aplicar ese cambio junto con los de las
-secciones 2 y 3 en la misma ventana de mantenimiento, en este orden exacto:
+secciones 2, 3 y 4 en la misma ventana de mantenimiento, en este orden
+exacto. La regla de la sección 2 (barra final) y la de la sección 3.3
+(`/index.html`, la versión con `$request_uri`, NUNCA la de `location =`)
+van dentro del mismo `location /` que la sección 1 — ver 3.3 para el orden
+interno (el `if` de `/index.html` antes de `try_files`; el `location ~`
+de la barra final es un bloque aparte que Nginx evalúa antes que
+`location /` por ser regex):
 
 ```bash
 # 1. Respaldar con fecha
 sudo cp -a /etc/nginx/sites-available/drmanuelespinoza.com \
            /etc/nginx/sites-available/drmanuelespinoza.com.bak.$(date +%Y%m%d-%H%M%S)
 
-# 2. Aplicar los cambios que hagan falta de las secciones 1.3, 2.2, 2.3 y 3
+# 2. Aplicar los cambios que hagan falta de las secciones 1.3, 2.2, 3.2, 3.3 y 4
 
 # 3. Validar la sintaxis. Si esto falla, NO recargar.
 sudo nginx -t
@@ -325,15 +424,18 @@ sudo nginx -t
 # 4. Recargar solo si el paso 3 pasó
 sudo systemctl reload nginx
 
-# 5. Verificar — las 8 rutas de la sección 1.5, más:
+# 5. Verificar — las 8 rutas planas y las 7 con barra final de la sección
+#    1.5, más:
 curl -s -o /dev/null -w "www:        %{http_code} -> %{redirect_url}\n" https://www.drmanuelespinoza.com
 curl -s -o /dev/null -w "index.html: %{http_code} -> %{redirect_url}\n" https://drmanuelespinoza.com/index.html
 curl -s -o /dev/null -w "apex:       %{http_code}\n" https://drmanuelespinoza.com
 curl -sI https://drmanuelespinoza.com/opengraph-image | grep -i content-type
 ```
 
-Esperado en el paso 5: las 8 rutas de la sección 1.5 en `200`, `www: 301`,
-`index.html: 301`, `apex: 200`, y `Content-Type: image/png`.
+Esperado en el paso 5: las 8 rutas planas de la sección 1.5 en `200`, las 7
+rutas con barra final en `301` hacia su versión sin barra, `www: 301`,
+`index.html: 301`, `apex: 200` (si `apex` da `301`, el bucle de la sección
+3.3 volvió — no seguir), y `Content-Type: image/png`.
 
 ## Rollback
 
@@ -345,8 +447,8 @@ sudo cp -a /etc/nginx/sites-available/drmanuelespinoza.com.bak.<TIMESTAMP> \
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Después del rollback, repetir la verificación del paso 5. Si las 8 rutas de
-la sección 1.5 dejan de dar `200` incluso con la configuración anterior
-restaurada, el problema no es de Nginx — revisar el release activo con
-`readlink /srv/www/dr-manuel-espinoza/current` (ver
+Después del rollback, repetir la verificación del paso 5. Si las rutas de
+la sección 1.5 dejan de dar los códigos esperados incluso con la
+configuración anterior restaurada, el problema no es de Nginx — revisar el
+release activo con `readlink /srv/www/dr-manuel-espinoza/current` (ver
 `docs/deployment-vps.md`).

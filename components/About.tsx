@@ -18,7 +18,7 @@ const credentials = [
   },
   {
     label: "Cercano",
-    text: "Atiendo en dos sedes de San Pedro Sula: Consultorio CNA y Hospital del Valle, con agenda en línea.",
+    text: "Atiendo en dos sedes de San Pedro Sula: Centro de Neumología y Alergias (CNA) y Hospital del Valle, con agenda en línea.",
   },
 ];
 

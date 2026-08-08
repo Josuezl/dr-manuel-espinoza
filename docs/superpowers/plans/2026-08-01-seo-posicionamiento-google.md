@@ -12,10 +12,35 @@
 
 ## Global Constraints
 
-- **Node se carga con nvm.** `node` no está en el PATH por defecto. Antes de cualquier comando de node/npm: `export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0`. Node v24.15.0, npm 11.12.1.
+- **Preparar el entorno en CADA shell nuevo.** Ni `node` ni `rg` están en el PATH por defecto, y el contrato necesita los dos. Ejecutar esto antes de cualquier comando de test o build:
+
+  ```bash
+  export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
+  export PATH="$HOME/.local/bin:$PATH"
+  ```
+
+  **Los separadores son `;`, no `&&`.** Al cargarse, `nvm.sh` devuelve estado 3 aunque haya funcionado; encadenar con `&&` salta silenciosamente el `nvm use` y `node` queda inaccesible.
+
+  Comprobación: `node -v` → `v24.15.0`, y `bash -c 'rg --version'` → ripgrep con `+pcre2`. Si alguno falla, el contrato reporta un **falso negativo** (`command not found` se lee como aserción fallida), no un problema del código.
 - **Leer los docs de Next antes de escribir código.** `AGENTS.md` lo exige: esta versión difiere del entrenamiento. Los docs están en `node_modules/next/dist/docs/01-app/`.
 - **`output: "export"`.** No hay servidor. Prohibido: Route Handlers, Server Actions, `redirects`/`headers` en `next.config.ts`, ISR, optimización de imágenes con el loader por defecto.
 - **`tests/site-contract.sh` es el contrato del sitio.** Toda modificación de un componente que el contrato asegura debe actualizar el contrato en el **mismo commit**. Se corre con `bash tests/site-contract.sh` y debe terminar en `Site redesign contract passed.`
+- **`npm run lint` es parte de la verificación de toda tarea que toque componentes.** CI lo corre antes del build (`.github/workflows/deploy-production.yml:55`), así que un error de lint impide el despliegue. Ni el contrato ni `tsc --noEmit` lo detectan.
+- **`rg` (ripgrep) debe estar en el PATH de bash.** El contrato lo usa en cada aserción, incluida `--pcre2`. En CI se instala con `apt-get install ripgrep`. En macOS con Claude Code, `rg` es una función de zsh y **bash no la ve**, así que el contrato falla con `rg: command not found` y reporta un falso negativo. Si eso pasa, crear el shim una vez:
+
+  ```bash
+  mkdir -p "$HOME/.local/bin"
+  cat > "$HOME/.local/bin/rg" <<'SH'
+  #!/usr/bin/env bash
+  _cc_bin="${CLAUDE_CODE_EXECPATH:-}"
+  [[ -x $_cc_bin ]] || _cc_bin="$(command -v claude)"
+  exec -a rg "$_cc_bin" "$@"
+  SH
+  chmod +x "$HOME/.local/bin/rg"
+  export PATH="$HOME/.local/bin:$PATH"
+  ```
+
+  `$HOME/.local/bin` **no** está en el PATH por defecto en esta máquina, así que el `export` es obligatorio en cada shell que corra el contrato (o agregarlo al `~/.zshrc` para que persista). Verificar con `bash -c 'rg --version'`: debe reportar ripgrep con `+pcre2`, que las aserciones `assert_matches` necesitan. Si `rg` ya es un binario real, nada de esto hace falta.
 - **Datos reales, nunca inventados.** El NAP, los teléfonos y los horarios son los del spec. Si falta un dato (horarios de CNA, coordenadas sin verificar), se **omite el campo**; no se rellena con un valor plausible.
 - **Dominio canónico:** `https://drmanuelespinoza.com` (sin `www`).
 - **Idioma:** todo el contenido en español de Honduras. Los commits siguen Conventional Commits, en español, sin tildes en el asunto.
@@ -109,16 +134,25 @@ for (const [name, re] of Object.entries(checks)) {
 const blocks = [
   ...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs),
 ];
+if (blocks.length === 0) {
+  console.log("json-ld: NO");
+}
 for (const [, raw] of blocks) {
-  const o = JSON.parse(raw);
-  console.log(`json-ld: ${o["@type"]}`);
+  try {
+    const o = JSON.parse(raw);
+    console.log(`json-ld: ${o["@type"]}`);
+  } catch {
+    console.log("json-ld: INVALIDO");
+  }
 }
 ```
+
+Los demás chequeos siempre imprimen `SI` o `NO`; este debe hacer lo mismo. Un bloque ausente que no imprime nada deja pasar el defecto sin señal, y seis tareas posteriores dependen de esta herramienta para verificar el structured data.
 
 - [ ] **Step 2: Comprobar que corre sobre la build actual**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 node scripts/audit-html.mjs out/index.html
 ```
 
@@ -190,13 +224,13 @@ Esperado: `Site redesign contract passed.`
 - [ ] **Step 6: Verificar en el HTML generado**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 npm run build
 grep -o 'rel="canonical" href="[^"]*"' out/index.html
 grep -c 'name="keywords"' out/index.html || echo "keywords eliminado (correcto)"
 ```
 
-Esperado: `rel="canonical" href="https://drmanuelespinoza.com/"` y ningún `keywords`.
+Esperado: `rel="canonical" href="https://drmanuelespinoza.com"` y ningún `keywords`. **Sin barra final**: con `metadataBase` más `canonical: "/"`, Next 16 emite la URL sin barra, tal como su propio ejemplo documentado. Coincide con lo que emite `app/sitemap.ts`, así que las dos señales concuerdan.
 
 - [ ] **Step 7: Commit**
 
@@ -234,9 +268,13 @@ assert_contains "data/site.ts" 'href: "/#sobre-mi"'
 assert_contains "data/site.ts" 'href: "/#noticias"'
 assert_contains "data/site.ts" 'href: "/#videos"'
 assert_contains "data/site.ts" 'href: "/#publicaciones"'
+assert_contains "components/Header.tsx" 'href="/"'
+assert_absent "components/Header.tsx" 'href="#inicio"'
 assert_contains "components/Header.tsx" 'href="/#citas"'
 assert_absent "components/Header.tsx" 'href="#citas"'
 ```
+
+El par del logo importa: `Header.tsx` cambia tres hrefs y sin él, revertir el del logo a `href="#inicio"` pasaría el contrato en silencio. No es vacuo: `href="/"` no puede coincidir dentro de `href="/#citas"` — las cadenas divergen un carácter antes de que termine la aguja.
 
 - [ ] **Step 2: Correr el contrato y verificar que falla**
 
@@ -263,6 +301,10 @@ export const nav = [
 - [ ] **Step 4: Actualizar `components/Header.tsx`**
 
 Cambiar `href="#inicio"` → `href="/"` (línea 15) y las dos ocurrencias de `href="#citas"` → `href="/#citas"` (líneas 96 y 107).
+
+**Los tres enlaces deben pasar de `<a>` a `<Link>` de `next/link`.** Al apuntar a `/`, un `<a>` activa la regla `@next/next/no-html-link-for-pages` y `npm run lint` falla con error. CI corre lint antes del build (`.github/workflows/deploy-production.yml:55`), así que dejarlos como `<a>` impide el despliegue. El `<a>` del Hero no se toca: su ancla es relativa y no dispara la regla.
+
+Correr `npm run lint` como parte de la verificación, no solo el contrato y `tsc`: ninguno de los dos detecta esto.
 
 - [ ] **Step 5: Ajustar el contrato existente**
 
@@ -297,12 +339,23 @@ git commit -m "fix(nav): usar anclas absolutas para que funcionen en subpaginas"
 
 Las imágenes de las tarjetas tienen `alt=""`, que le dice al lector de pantalla y a Google que son decorativas. No lo son: ilustran cada procedimiento.
 
+**El alt describe la imagen, no repite el título.** Cada tarjeta ya muestra `procedure.name` en su `<h3>` y `procedure.description` debajo. Un alt que repita el nombre no aporta nada y se lee dos veces seguidas. El alt debe decir qué se ve en la foto.
+
+**Hay que quitar `aria-hidden="true"` del `<Image>`.** Ese atributo saca al elemento del árbol de accesibilidad, así que el lector de pantalla ignora la imagen y su alt: dejarlo convierte el alt en texto muerto para accesibilidad y contradice el propósito del cambio.
+
+**Regla no negociable sobre el contenido:** las descripciones se escriben mirando cada archivo, y solo dicen lo que se ve. Nada de detalle clínico inventado — ni nombres de dispositivos, ni anatomía, ni hallazgos que no sean visualmente evidentes. Si una imagen no se puede identificar con confianza, se describe en términos genéricos y se marca para que el Dr. Espinoza la revise.
+
 - [ ] **Step 1: Escribir la aserción que falla**
 
 ```bash
 # Las imagenes de procedimientos son de contenido, no decorativas.
-assert_contains "components/Procedures.tsx" 'alt={`${procedure.name}'
+assert_contains "data/site.ts" "alt:"
+assert_count "data/site.ts" "alt:" "7"
+assert_contains "components/Procedures.tsx" "alt={procedure.alt}"
+assert_not_matches "components/Procedures.tsx" '<Image[^>]*aria-hidden'
 ```
+
+El patrón se limita a `[^>]*` a propósito. Con `[\s\S]*?` la búsqueda cruza el cierre del `<Image>` y coincide con el `aria-hidden` del `<div>` del degradado que viene después, que sí debe conservarlo: la aserción fallaría siempre, hiciera lo que hiciera el código.
 
 - [ ] **Step 2: Correr el contrato y verificar que falla**
 
@@ -312,13 +365,13 @@ bash tests/site-contract.sh
 
 Esperado: `Expected components/Procedures.tsx to contain: alt={`${procedure.name}`
 
-- [ ] **Step 3: Reemplazar el alt vacío**
+- [ ] **Step 3: Escribir las descripciones y conectarlas**
 
-En `components/Procedures.tsx` línea 65, cambiar `alt=""` por:
+Abrir los siete archivos de `public/img/procedure-*` y describir lo que se ve en cada uno. Agregar un campo `alt` a cada entrada de `procedures` en `data/site.ts`, junto a `image` e `imagePosition`, y extender la interfaz si existe.
 
-```tsx
-alt={`${procedure.name}, procedimiento realizado por el Dr. Manuel Espinoza en San Pedro Sula`}
-```
+En `components/Procedures.tsx`, reemplazar `alt=""` por `alt={procedure.alt}` y **borrar la línea `aria-hidden="true"` del `<Image>`**. El `aria-hidden` del `<div>` del degradado que está debajo sí se queda: ese sí es decorativo.
+
+Las descripciones van en `data/site.ts` y no en el componente porque son contenido, igual que `name` y `description`, y así el Dr. Espinoza puede revisarlas en el mismo archivo donde vive el resto del texto clínico.
 
 - [ ] **Step 4: Correr el contrato y verificar que pasa**
 
@@ -388,8 +441,12 @@ Esperado: `Expected file to exist: app/opengraph-image.tsx`.
 
 `ImageResponse` solo soporta flexbox y un subconjunto de CSS. Nada de `display: grid`.
 
+La primera línea es obligatoria: `opengraph-image` es un Route Handler especializado, y con `output: "export"` la build falla sin ella. Es el mismo idiom que ya usan `app/sitemap.ts` y `app/robots.ts` en este repo.
+
 ```tsx
 import { ImageResponse } from "next/og";
+
+export const dynamic = "force-static";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -622,6 +679,18 @@ git commit -m "feat(seo): agregar fuente unica del NAP con las dos sedes"
 - Create: `lib/schema.ts`
 - Create: `tests/schema.test.mjs`
 - Modify: `package.json` (script `test:schema`)
+- Modify: `tsconfig.json` (`allowImportingTsExtensions`)
+
+**Resolución de imports — decidida y verificada antes de empezar, no re-litigar:**
+
+`lib/schema.ts` **no** usa el alias `@/`, a diferencia del resto del código. Motivo: `@/` viene de `paths` en `tsconfig.json`, que Node no lee, y `node:test` falla con `ERR_MODULE_NOT_FOUND`. Pero Node exige la extensión explícita, y `tsc` la rechaza con `TS5097` salvo que se active un flag.
+
+La combinación que funciona en las tres capas:
+
+1. Agregar `"allowImportingTsExtensions": true` a `compilerOptions` en `tsconfig.json` (`noEmit: true` ya está, que es su prerrequisito).
+2. En `lib/schema.ts` y en el test, importar con ruta relativa **y extensión**: `../data/seo.ts`.
+
+Verificado empíricamente en este repo: `npx tsc --noEmit` sin errores, `node --test` en verde, y `npm run build` compila con ese patrón en código bundleado. Los componentes que consumen `lib/schema.ts` siguen usando `@/lib/schema` con normalidad.
 
 **Interfaces:**
 - Consumes: `sedes`, `especialidades`, `perfiles`, `sitio` de `data/seo.ts`
@@ -641,7 +710,12 @@ Crear `tests/schema.test.mjs`. Usa `node:test`, incluido en Node 24 — sin depe
 ```js
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { physicianSchema, clinicSchema, faqSchema, breadcrumbSchema } from "../lib/schema.ts";
+import {
+  physicianSchema,
+  clinicSchema,
+  faqSchema,
+  breadcrumbSchema,
+} from "../lib/schema.ts";
 import { sedes } from "../data/seo.ts";
 
 test("physicianSchema declara las tres especialidades", () => {
@@ -692,18 +766,24 @@ test("breadcrumbSchema numera las posiciones desde 1", () => {
 });
 ```
 
-- [ ] **Step 2: Agregar el script de test a `package.json`**
+- [ ] **Step 2: Activar el flag y agregar el script de test**
 
-Node 24 ejecuta TypeScript sin transpilar mediante `--experimental-strip-types`.
+En `tsconfig.json`, dentro de `compilerOptions`:
 
 ```json
-"test:schema": "node --experimental-strip-types --test tests/schema.test.mjs"
+"allowImportingTsExtensions": true,
+```
+
+En `package.json`, dentro de `scripts`. Node 24 hace type-stripping por defecto: **no** lleva `--experimental-strip-types`.
+
+```json
+"test:schema": "node --test tests/schema.test.mjs"
 ```
 
 - [ ] **Step 3: Correr los tests y verificar que fallan**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 npm run test:schema
 ```
 
@@ -712,7 +792,7 @@ Esperado: falla por no existir `lib/schema.ts`.
 - [ ] **Step 4: Crear `lib/schema.ts`**
 
 ```ts
-import { sedes, especialidades, perfiles, sitio, type Sede } from "@/data/seo";
+import { sedes, especialidades, perfiles, sitio, type Sede } from "../data/seo.ts";
 
 const CLINIC_ID = (sede: Sede) => `${sitio.url}/#${sede.id}`;
 const PHYSICIAN_ID = `${sitio.url}/#physician`;
@@ -812,12 +892,23 @@ export function medicalWebPageSchema(p: {
 npm run test:schema
 ```
 
-Esperado: 7 tests en verde. Si el import con alias `@/` falla en `node:test`, cambiar los imports del archivo de test a rutas relativas (`../data/seo.ts`) y dejar el alias solo en `lib/schema.ts`, que sí pasa por el bundler de Next.
+Esperado: 7 tests en verde.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Confirmar que tsc y la build siguen sanos**
+
+El flag nuevo y la extensión explícita tocan la resolución de módulos, así que hay que comprobar las tres capas, no solo los tests.
 
 ```bash
-git add lib/schema.ts tests/schema.test.mjs package.json
+npx tsc --noEmit
+npm run build
+```
+
+Esperado: ambos sin errores.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add lib/schema.ts tests/schema.test.mjs package.json tsconfig.json
 git commit -m "feat(seo): agregar constructores de JSON-LD con tests"
 ```
 
@@ -917,6 +1008,22 @@ git commit -m "refactor(seo): generar el JSON-LD desde constructores testeados"
 - Produces: sección con `id="contacto"`
 
 El NAP tiene que ser **texto visible**, no solo JSON-LD. Google contrasta ambos, y los pacientes necesitan poder llamar.
+
+**Antes de nada, reconciliar los nombres de las sedes.** `data/site.ts` tiene un arreglo `clinics` que describe las mismas dos sedes que `sedes` en `data/seo.ts`, y **ya divergieron**: `site.ts` dice `"Consultorio CNA"` y `seo.ts` dice `"Centro de Neumología y Alergias (CNA)"`. `Appointments` renderiza el primero y `Contact` renderizará el segundo, así que el sitio mostraría dos nombres para el mismo lugar — justo la inconsistencia de NAP que este trabajo busca eliminar.
+
+Corrección: `data/site.ts` deja de tener sus propios datos de sede y deriva de `sedes`:
+
+```ts
+import { sedes } from "./seo";
+
+export const clinics = sedes.map((sede) => ({
+  name: sede.name,
+  city: sede.locality,
+  bookingUrl: sede.bookingUrl,
+}));
+```
+
+El nombre correcto es el de `seo.ts`: coincide con el rótulo real del consultorio y es el que debe ir en la ficha de Google. Hay que ajustar las aserciones del contrato que fijan las URLs de CloudMed (líneas ~464-465) si el cambio las mueve, y verificar que `Appointments` sigue renderizando igual.
 
 - [ ] **Step 1: Escribir las aserciones que fallan**
 
@@ -1066,6 +1173,30 @@ Abrir `http://localhost:3000/#contacto`. Revisar en ancho de 500px (mínimo del 
 git add components/Contact.tsx app/page.tsx tests/site-contract.sh
 git commit -m "feat(seo): agregar seccion de contacto con NAP visible"
 ```
+
+---
+
+### Task 8b: Cerrar el nombre de sede en prosa y arreglar reduced-motion
+
+**Files:**
+- Modify: `components/About.tsx`
+- Modify: `components/Reveal.tsx`
+- Modify: `tests/site-contract.sh`
+
+Dos arreglos independientes, un commit cada uno. Ambos salieron de revisiones, no del plan original.
+
+**1. `About.tsx` dice "Consultorio CNA".** La Task 8 hizo que `clinics` derive de `sedes`, pero esa frase es prosa fija. Resultado: la misma página nombra la misma clínica de dos formas — "Consultorio CNA" en About, y "Centro de Neumología y Alergias (CNA)" en Appointments, Contact, Footer y el JSON-LD. Es la inconsistencia de NAP que este plan existe para eliminar, movida de un archivo de datos a un párrafo. Hay que actualizar la frase al nombre canónico y la aserción que la fija (`tests/site-contract.sh` línea ~400) en el mismo commit.
+
+**2. `Reveal` deja contenido invisible con `prefers-reduced-motion: reduce`.** Medido con Chrome headless sobre la build real: cada sección pierde entre 3 y 9 elementos de forma permanente (sobre-mi 7/28, publicaciones 9/71). Causa: `useReducedMotion()` devuelve `null` en el servidor, así que el HTML sale con `opacity:0` inline; en el cliente con reduced-motion, `initial={false}` y `whileInView={undefined}` no dejan ningún destino que revierta ese estado.
+
+Corrección en `components/Reveal.tsx`: con `reduce` activo, dar un destino explícito en vez de `undefined`.
+
+```tsx
+whileInView={reduce ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+transition={reduce ? { duration: 0 } : { duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
+```
+
+El contenido aparece de inmediato, sin animación. Revisar si `WordsReveal` tiene el mismo patrón. Verificar con Chrome headless comparando `no-preference` contra `reduce`: la diferencia debe ser cero.
 
 ---
 
@@ -2376,7 +2507,7 @@ El build pesa 88 MB. `noticia-myclip.png` son 2.8 MB y `procedure-pacemaker.png`
 `tests/site-contract.sh` ya importa `sharp` pero no está declarada en `package.json`. Depender de una transitiva es frágil.
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 npm install --save-dev sharp
 ```
 
@@ -2624,6 +2755,22 @@ sudo cp -a /etc/nginx/sites-available/drmanuelespinoza.com.bak.<TIMESTAMP> \
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
+**Content-Type de la imagen OpenGraph.** La Task 4 emite `out/opengraph-image` **sin extensión**. nginx resuelve el tipo MIME por extensión, así que un archivo sin ella cae en `default_type` — normalmente `application/octet-stream`. Los crawlers de WhatsApp y Facebook descartan una `og:image` que no llega como `image/*`, que es justo el caso de uso que motivó esa tarea. Hace falta una regla explícita:
+
+```nginx
+location = /opengraph-image {
+    default_type image/png;
+}
+```
+
+Verificar después de aplicarla:
+
+```bash
+curl -sI https://drmanuelespinoza.com/opengraph-image | grep -i content-type
+```
+
+Esperado: `Content-Type: image/png`. Si devuelve `application/octet-stream`, la vista previa al compartir por WhatsApp no muestra imagen.
+
 **Requisito previo:** el certificado TLS debe cubrir tanto `drmanuelespinoza.com` como `www.drmanuelespinoza.com`. Si solo cubre el apex, el navegador rechaza la conexión a `www` por error de certificado **antes** de llegar al redirect. Comprobarlo con:
 
 ```bash
@@ -2673,7 +2820,7 @@ git commit -m "docs(seo): documentar redirecciones nginx y tareas del cliente"
 - [ ] **Step 1: Correr la suite completa**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 24.15.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.15.0
 bash tests/site-contract.sh
 npm run test:schema
 npx tsc --noEmit

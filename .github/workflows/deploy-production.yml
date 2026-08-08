@@ -54,6 +54,9 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Run test suite
+        run: npm run test
+
       - name: Build static export
         run: |
           npm run build
@@ -108,12 +111,21 @@ jobs:
             -o UserKnownHostsFile="$KNOWN_HOSTS"
           )
 
+          # Derivado de data/routes.ts (fuente unica de verdad de las rutas del
+          # sitio) en vez de hardcodeado: si mañana se agrega o quita una
+          # pagina en data/routes.ts, el health check la cubre sin que haga
+          # falta acordarse de tocar este workflow tambien. El checkout de
+          # este job sigue disponible en el filesystem del runner en este
+          # paso, asi que no hace falta un paso nuevo para leerlo.
+          ROUTE_PATHS="$(node -e "import('./data/routes.ts').then(m => console.log(m.routes.map((r) => r.path).join(' ')))")"
+
           ssh "${SSH_OPTIONS[@]}" "$VPS_USER@$VPS_HOST" \
-            "bash -s -- '$DEPLOY_PATH' '$GITHUB_SHA' '$HEALTHCHECK_HOST'" <<'REMOTE_ACTIVATE'
+            "bash -s -- '$DEPLOY_PATH' '$GITHUB_SHA' '$HEALTHCHECK_HOST' '$ROUTE_PATHS'" <<'REMOTE_ACTIVATE'
           set -euo pipefail
           deploy_path="$1"
           sha="$2"
           healthcheck_host="$3"
+          route_paths="$4"
           previous=""
 
           if [[ -L "$deploy_path/current" ]]; then
@@ -123,13 +135,35 @@ jobs:
           ln -sfn "releases/$sha" "$deploy_path/current.next"
           mv -Tf "$deploy_path/current.next" "$deploy_path/current"
 
-          if ! curl -fsS -o /dev/null -H "Host: $healthcheck_host" http://127.0.0.1/; then
+          # Recorre las 8 rutas del contrato (no solo "/"): un despliegue que
+          # tumba 7 de 8 paginas pero deja "/" sirviendo debe fallar igual.
+          # No se usa "curl -fsS": -f solo distingue 2xx de 4xx/5xx, así que
+          # un 301 (por ejemplo el bucle de /index.html de docs/seo-nginx.md
+          # seccion 3.3 si algun dia esa regla vuelve a aplicarse mal) pasa
+          # como "exito" para -f aunque nunca llegue un 200. Por eso se
+          # captura el codigo con -o /dev/null -w '%{http_code}' sin -L (no
+          # seguir redirecciones) y se compara explicitamente contra "200":
+          # una redireccion queda expuesta con su propio codigo (301/302),
+          # no oculta detras del 200 al que redirige.
+          all_ok=1
+          for path in $route_paths; do
+            code="$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $healthcheck_host" "http://127.0.0.1${path}")" \
+              || code="000"
+            if [[ "$code" == "200" ]]; then
+              printf 'Health check OK   %-28s %s\n' "$path" "$code"
+            else
+              printf 'Health check FAIL %-28s %s\n' "$path" "$code" >&2
+              all_ok=0
+            fi
+          done
+
+          if [[ "$all_ok" -ne 1 ]]; then
             if [[ -n "$previous" ]]; then
               ln -sfn "$previous" "$deploy_path/current.rollback"
               mv -Tf "$deploy_path/current.rollback" "$deploy_path/current"
-              printf 'Health check failed; rollback restored %s\n' "$previous" >&2
+              printf 'Health check failed on at least one route; rollback restored %s\n' "$previous" >&2
             else
-              printf 'Health check failed and no previous release exists\n' >&2
+              printf 'Health check failed on at least one route and no previous release exists\n' >&2
             fi
             exit 1
           fi

@@ -2,6 +2,15 @@ import type { Metadata, Viewport } from "next";
 import { Libre_Franklin, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { doctor } from "@/data/site";
+import { getRoute } from "@/data/routes";
+import JsonLd from "@/components/JsonLd";
+import { physicianSchema } from "@/lib/schema";
+
+// title y description del home se derivan de data/routes.ts en vez de
+// repetirse a mano: es la misma fuente que ya usa pageMetadata() para las
+// 7 paginas de contenido, asi que si alguien edita routes.ts el home no
+// puede quedar con metadata vieja en silencio.
+const homeRoute = getRoute("/");
 
 const libreFranklin = Libre_Franklin({
   subsets: ["latin"],
@@ -19,19 +28,11 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://drmanuelespinoza.com"),
-  title: "Cardiólogo Intervencionista en San Pedro Sula | Dr. Manuel Espinoza",
-  description:
-    "Dr. Manuel Espinoza, cardiólogo intervencionista y especialista en hemodinamia en San Pedro Sula, Honduras. Cateterismo, angioplastia, TAVI y cardiopatía estructural. Agenda tu cita.",
-  keywords: [
-    "Dr. Manuel Espinoza",
-    "Cardiólogo San Pedro Sula",
-    "Cardiología Intervencionista Honduras",
-    "MyClip Honduras",
-    "TAVI Honduras",
-    "Insuficiencia mitral",
-    "Angioplastia coronaria",
-    "Hospital del Valle",
-  ],
+  title: homeRoute.title,
+  description: homeRoute.description,
+  alternates: {
+    canonical: "/",
+  },
   authors: [{ name: doctor.name }],
   openGraph: {
     title: "Cardiólogo Intervencionista en San Pedro Sula | Dr. Manuel Espinoza",
@@ -40,7 +41,6 @@ export const metadata: Metadata = {
     siteName: doctor.shortName,
     locale: "es_HN",
     type: "website",
-    images: [{ url: doctor.photo }],
   },
   robots: { index: true, follow: true },
 };
@@ -56,36 +56,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": ["Physician", "MedicalBusiness"],
-    "@id": "https://drmanuelespinoza.com/#physician",
-    name: "Dr. Manuel Espinoza Rueda - Cardiólogo Intervencionista",
-    alternateName: "Dr. Manuel Espinoza",
-    url: "https://drmanuelespinoza.com",
-    image: "https://drmanuelespinoza.com/img/dr-manuel-espinoza.jpg",
-    medicalSpecialty: ["Cardiovascular", "InterventionalCardiology"],
-    description:
-      "Dr. Manuel Espinoza, cardiólogo intervencionista y especialista en hemodinamia en San Pedro Sula, Honduras. Cateterismo, angioplastia, TAVI y cardiopatía estructural.",
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "San Pedro Sula",
-      addressRegion: "Cortés",
-      addressCountry: "HN",
-    },
-    areaServed: {
-      "@type": "AdministrativeArea",
-      name: "San Pedro Sula, Honduras",
-    },
-  };
-
   return (
     <html lang="es" className={`${libreFranklin.variable} ${sourceSans.variable}`}>
       <body className="min-h-screen antialiased">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <JsonLd data={physicianSchema()} />
         {children}
       </body>
     </html>

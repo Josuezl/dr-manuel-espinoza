@@ -35,7 +35,7 @@ export default function Videos() {
                   <video
                     controls
                     playsInline
-                    preload="metadata"
+                    preload="none"
                     poster={video.poster}
                     aria-label={`Video educativo: ${video.title}`}
                     className="aspect-[9/16] h-auto w-full bg-navy object-contain"

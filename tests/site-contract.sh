@@ -84,6 +84,15 @@ assert_file() {
   fi
 }
 
+assert_no_path() {
+  local path="$1"
+
+  if [[ -e "$path" ]]; then
+    printf 'Expected path to NOT exist: %s\n' "$path" >&2
+    exit 1
+  fi
+}
+
 assert_count() {
   local file="$1"
   local value="$2"
@@ -317,9 +326,21 @@ assert_contains "components/Procedures.tsx" "procedure.image"
 assert_contains "components/Procedures.tsx" "procedure.imagePosition"
 assert_contains "components/Procedures.tsx" 'procedure.imageFit === "contain"'
 assert_contains "components/Procedures.tsx" "procedure-card-image"
+# Las imagenes de procedimientos son de contenido, no decorativas: el alt vive
+# junto al resto del contenido clinico en data/site.ts, y la imagen ya no se
+# oculta de la accesibilidad con aria-hidden.
+assert_contains "data/site.ts" "alt:"
+# 7 objetos de datos + 1 aparicion en la interfaz "Procedure" (agregada para
+# tipar el "href" opcional de C1): "alt:", "imagePosition:" e "imageFit:" son
+# tambien nombres de campo en esa interfaz, asi que su conteo literal sube de
+# 7 a 8. "image: \"/img/procedure-" no colisiona porque la interfaz solo
+# declara "image: string" (sin el prefijo de valor), por eso se queda en 7.
+assert_count "data/site.ts" "alt:" "8"
+assert_contains "components/Procedures.tsx" "alt={procedure.alt}"
+assert_not_matches "components/Procedures.tsx" '<Image[^>]*aria-hidden'
 assert_count "data/site.ts" 'image: "/img/procedure-' "7"
-assert_count "data/site.ts" 'imagePosition:' "7"
-assert_count "data/site.ts" "imageFit:" "7"
+assert_count "data/site.ts" 'imagePosition:' "8"
+assert_count "data/site.ts" "imageFit:" "8"
 assert_matches "data/site.ts" 'image: "/img/procedure-tavi\.webp",\s+imagePosition: "[^"]+",\s+imageFit: "contain"'
 assert_matches "data/site.ts" 'image: "/img/procedure-ivus\.webp",\s+imagePosition: "[^"]+",\s+imageFit: "contain"'
 assert_count "data/site.ts" 'image: "/img/procedure-myclip.webp"' "1"
@@ -328,7 +349,7 @@ assert_count "data/site.ts" 'image: "/img/procedure-angioplasty.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-ivus.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-paravalvular.webp"' "1"
 assert_count "data/site.ts" 'image: "/img/procedure-pulmonary-embolism.webp"' "1"
-assert_count "data/site.ts" 'image: "/img/procedure-pacemaker.png"' "1"
+assert_count "data/site.ts" 'image: "/img/procedure-pacemaker.webp"' "1"
 assert_contains "components/Procedures.tsx" "overflow-x-auto"
 assert_contains "components/Procedures.tsx" "AutoScrollRail"
 assert_contains "components/Procedures.tsx" "auto-scroll-procedures"
@@ -371,7 +392,7 @@ assert_raster_image "public/img/procedure-angioplasty.webp"
 assert_raster_image "public/img/procedure-ivus.webp"
 assert_raster_image "public/img/procedure-paravalvular.webp"
 assert_raster_image "public/img/procedure-pulmonary-embolism.webp"
-assert_raster_image "public/img/procedure-pacemaker.png"
+assert_raster_image "public/img/procedure-pacemaker.webp"
 assert_unique_files "7" \
   "public/img/procedure-myclip.webp" \
   "public/img/procedure-tavi.webp" \
@@ -379,7 +400,12 @@ assert_unique_files "7" \
   "public/img/procedure-ivus.webp" \
   "public/img/procedure-paravalvular.webp" \
   "public/img/procedure-pulmonary-embolism.webp" \
-  "public/img/procedure-pacemaker.png"
+  "public/img/procedure-pacemaker.webp"
+
+# Las imagenes pesadas se sirven en WebP: con output: export el navegador
+# descarga el archivo fuente tal cual, sin optimizacion de Next.
+assert_file "scripts/optimize-images.mjs"
+assert_contains "data/site.ts" "/img/procedure-pacemaker.webp"
 
 # Secondary portrait, videos, and editorial cards stay clean and uniform.
 assert_contains "components/About.tsx" 'src="/img/dr-manuel-espinoza-cutout.webp"'
@@ -390,7 +416,7 @@ assert_contains "components/About.tsx" "auto-rows-fr"
 assert_contains "components/About.tsx" "grid items-start"
 assert_absent "components/About.tsx" "grid items-center"
 assert_contains "components/About.tsx" "lg:grid-cols"
-assert_contains "components/About.tsx" "Atiendo en dos sedes de San Pedro Sula: Consultorio CNA y Hospital del Valle, con agenda en línea."
+assert_contains "components/About.tsx" "Atiendo en dos sedes de San Pedro Sula: Centro de Neumología y Alergias (CNA) y Hospital del Valle, con agenda en línea."
 assert_absent "components/About.tsx" "Hospital del Valle —"
 assert_absent "components/About.tsx" "Parallax"
 assert_contains "components/About.tsx" "translate-x-[5%]"
@@ -409,8 +435,8 @@ assert_contains "components/Videos.tsx" "flex flex-1 flex-col px-2 pb-2 text-lef
 assert_absent "components/Videos.tsx" "video.label"
 assert_absent "data/site.ts" "label: \"Video 0"
 assert_count "data/site.ts" 'poster: "/img/video-' "2"
-assert_raster_image "public/img/video-1-poster.png"
-assert_raster_image "public/img/video-2-poster.png"
+assert_raster_image "public/img/video-1-poster.webp"
+assert_raster_image "public/img/video-2-poster.webp"
 assert_absent "components/Videos.tsx" "lg:mt-24"
 assert_absent "components/Videos.tsx" "1.15fr"
 assert_absent "components/Reveal.tsx" "if (reduce)"
@@ -461,8 +487,17 @@ assert_absent "app/globals.css" ".footer-wordmark"
 
 # Existing factual and booking contracts remain intact.
 assert_contains "data/site.ts" "El primer MyClip de Honduras"
-assert_contains "data/site.ts" "https://app.cloudmedhn.com/agendar/VI1zxrktkCY51u8qw2Vsk-KK"
-assert_contains "data/site.ts" "https://app.cloudmedhn.com/agendar/IDyZjY4Py5oOzxmRbRTA8guF"
+assert_raster_image "public/img/noticia-myclip.webp"
+assert_contains "data/site.ts" "/img/noticia-myclip.webp"
+# NAP: site.ts ya no tiene nombre/URL de sede propios -- los deriva de
+# seo.ts, para que Appointments y Footer nunca puedan mostrar un nombre
+# distinto al de Contact y al JSON-LD (la inconsistencia que este cambio
+# corrige: site.ts decia "Consultorio CNA", seo.ts decia el nombre real).
+assert_contains "data/site.ts" 'import { sedes } from "./seo";'
+assert_contains "data/site.ts" "sedes.map"
+assert_absent "data/site.ts" "Consultorio CNA"
+assert_contains "data/seo.ts" "https://app.cloudmedhn.com/agendar/VI1zxrktkCY51u8qw2Vsk-KK"
+assert_contains "data/seo.ts" "https://app.cloudmedhn.com/agendar/IDyZjY4Py5oOzxmRbRTA8guF"
 assert_contains "components/Appointments.tsx" "clinics.map"
 assert_contains "components/Appointments.tsx" "href={clinic.bookingUrl}"
 assert_contains "components/Appointments.tsx" "target=\"_blank\""
@@ -489,5 +524,335 @@ assert_contains "app/layout.tsx" "lang=\"es\""
 # The reference is inspiration, never copied branding.
 assert_absent "app" "MediNexa"
 assert_absent "components" "MediNexa"
+
+# SEO: canonical declarado y señales muertas eliminadas.
+assert_contains "app/layout.tsx" 'canonical: "/"'
+assert_absent "app/layout.tsx" "keywords:"
+
+# #14 de la revision final: title y description del home ya no se repiten a
+# mano en app/layout.tsx -- se derivan de getRoute("/") (la misma fuente
+# que ya usa pageMetadata() para las 7 paginas de contenido), para que
+# editar data/routes.ts no pueda dejar el home con metadata vieja en
+# silencio. metadataBase se queda literal: no viene de data/routes.ts.
+assert_contains "app/layout.tsx" 'import { getRoute } from "@/data/routes"'
+assert_contains "app/layout.tsx" "getRoute(\"/\")"
+assert_contains "app/layout.tsx" "title: homeRoute.title"
+assert_contains "app/layout.tsx" "description: homeRoute.description"
+assert_contains "app/layout.tsx" 'metadataBase: new URL("https://drmanuelespinoza.com")'
+
+# SEO: imagen OpenGraph dedicada con proporcion 1.91:1 (1200x630), en vez del
+# retrato 4:5 de doctor.photo que las redes recortaban mal.
+assert_file "app/opengraph-image.tsx"
+assert_contains "app/opengraph-image.tsx" "width: 1200"
+assert_contains "app/opengraph-image.tsx" "height: 630"
+assert_absent "app/layout.tsx" "doctor.photo"
+
+# La navegacion funciona desde subpaginas, no solo desde el home.
+assert_contains "data/site.ts" 'href: "/#procedimientos"'
+assert_contains "data/site.ts" 'href: "/#sobre-mi"'
+assert_contains "data/site.ts" 'href: "/#noticias"'
+assert_contains "data/site.ts" 'href: "/#videos"'
+assert_contains "data/site.ts" 'href: "/#publicaciones"'
+assert_contains "components/Header.tsx" 'href="/"'
+assert_absent "components/Header.tsx" 'href="#inicio"'
+assert_contains "components/Header.tsx" 'href="/#citas"'
+assert_absent "components/Header.tsx" 'href="#citas"'
+
+# NAP: fuente unica, con los datos reales de las dos sedes.
+assert_file "data/seo.ts"
+assert_contains "data/seo.ts" "Residencial Altavista, Calle 24"
+assert_contains "data/seo.ts" "Hospital del Valle, Condominios 1, Consultorio 402, 4to piso"
+assert_contains "data/seo.ts" "+50425663004"
+assert_contains "data/seo.ts" "+50497745013"
+assert_contains "data/seo.ts" "Medicina Interna"
+assert_contains "data/seo.ts" "Cardiología Intervencionista"
+
+# NAP: el 50494532216 aparece dos veces (tel del telefono de WhatsApp y el
+# campo whatsapp); fijar el conteo evita que cualquiera de las dos ocurrencias
+# desaparezca sin que el contrato lo note.
+assert_count "data/seo.ts" "50494532216" "2"
+
+# NAP: strings "display" legibles por el paciente (lo que lee y marca), no
+# solo las formas compactas "tel:" que solo respaldan el href.
+assert_contains "data/seo.ts" "+504 2566-3004"
+assert_contains "data/seo.ts" "+504 9774-5013"
+assert_contains "data/seo.ts" "+504 9453-2216"
+
+# NAP: horario y correo de contacto tambien son datos reales que un cambio
+# accidental podria alterar sin que el contrato lo note.
+assert_contains "data/seo.ts" "11:00"
+assert_contains "data/seo.ts" "17:00"
+assert_contains "data/seo.ts" 'days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]'
+assert_contains "data/seo.ts" "ccardiologicosps@gmail.com"
+
+# NAP: CNA no tiene horario publicado (el cliente no lo ha confirmado), asi
+# que el campo "hours" debe estar deliberadamente ausente en su objeto. Un
+# assert_absent "hours" a secas seria incorrecto porque hospital-del-valle si
+# tiene "hours" legitimamente. En vez de acotar la busqueda usando el id de
+# la OTRA sede (que se rompe si el orden de las sedes cambia algun dia), se
+# acota con el propio bookingUrl de CNA -- un valor que vive dentro del mismo
+# objeto sin importar en que posicion del arreglo quede.
+assert_not_matches "data/seo.ts" 'id: "cna"[\s\S]*?hours:[\s\S]*?https://app\.cloudmedhn\.com/agendar/VI1zxrktkCY51u8qw2Vsk-KK'
+
+# NAP: ninguna sede tiene coordenadas "geo" (no estan verificadas contra
+# Google Maps; una coordenada equivocada manda a un paciente al lugar
+# incorrecto). Se busca el literal "geo:" -- con dos puntos, como se escriben
+# el resto de los campos reales (hours:, email:, whatsapp:) -- en vez del
+# string suelto "geo", para no depender de que ninguna otra palabra futura en
+# el archivo contenga esas cuatro letras por coincidencia.
+assert_absent "data/seo.ts" "geo:"
+
+# El JSON-LD sale de constructores testeados, no de un objeto inline.
+assert_file "components/JsonLd.tsx"
+assert_contains "app/layout.tsx" "physicianSchema"
+assert_absent "app/layout.tsx" '"@type": ["Physician", "MedicalBusiness"]'
+
+# NAP: el dato tiene que ser texto visible en la pagina, no solo JSON-LD --
+# Google contrasta ambos, y el paciente necesita algo que pueda tocar para
+# llamar. Contact no tiene datos propios: los consume de la misma fuente
+# (sedes) que ya usa el JSON-LD, para que nunca puedan divergir.
+assert_file "components/Contact.tsx"
+assert_contains "components/Contact.tsx" 'id="contacto"'
+assert_contains "components/Contact.tsx" "sedes.map"
+assert_contains "components/Contact.tsx" 'href={`tel:${'
+assert_contains "components/Contact.tsx" "https://wa.me/"
+assert_contains "app/page.tsx" "<Contact />"
+assert_precedes "app/page.tsx" "<Appointments />" "<Contact />"
+
+# El sitemap se genera del registro de rutas, no a mano.
+assert_file "data/routes.ts"
+assert_contains "app/sitemap.ts" "routes.map"
+assert_absent "app/sitemap.ts" 'url: "https://drmanuelespinoza.com",'
+
+# FAQ con structured data para cubrir busquedas informativas.
+assert_file "data/faq.ts"
+assert_file "components/Faq.tsx"
+assert_contains "components/Faq.tsx" "faqSchema"
+assert_contains "components/Faq.tsx" 'id="preguntas"'
+assert_contains "components/Faq.tsx" "<details"
+assert_contains "app/page.tsx" "<Faq />"
+assert_contains "data/faq.ts" "hemodinamia"
+assert_contains "data/faq.ts" "infarto"
+assert_count "data/faq.ts" 'pregunta: "' "10"
+assert_precedes "app/page.tsx" "<Publications />" "<Faq />"
+assert_precedes "app/page.tsx" "<Faq />" "<Appointments />"
+
+# La <summary> es un contenedor flex con chevron: sin esto no hay ninguna
+# senal visual de que la pregunta se puede desplegar (list-none +
+# marker:content-none borran el triangulo nativo sin reemplazarlo).
+assert_contains "components/Faq.tsx" "ChevronDown"
+assert_contains "components/Faq.tsx" 'aria-hidden="true"'
+assert_contains "components/Faq.tsx" "shrink-0"
+assert_contains "components/Faq.tsx" "list-none"
+assert_contains "components/Faq.tsx" "marker:content-none"
+assert_contains "components/Faq.tsx" 'className="group rounded-[1.5rem]'
+
+# El chevron rota al abrir y respeta prefers-reduced-motion con el mismo
+# prefijo motion-safe: que ya usa components/Procedures.tsx.
+assert_contains "components/Faq.tsx" "group-open:rotate-180"
+assert_contains "components/Faq.tsx" "motion-safe:transition-transform"
+
+# Faq.tsx sigue siendo un Server Component: nada de "use client".
+assert_absent "components/Faq.tsx" '"use client"'
+
+# JsonLd escapa cada "<" como la secuencia unicode \\u003c (JSON valido)
+# porque este es el primer JSON-LD que embebe prosa larga y editable por
+# el medico: un </script> dentro del texto cerraria la etiqueta antes de
+# tiempo.
+assert_file "lib/jsonld.ts"
+assert_contains "lib/jsonld.ts" 'replace(/</g, "\\u003c")'
+assert_contains "components/JsonLd.tsx" "escapeJsonLd"
+assert_absent "components/JsonLd.tsx" "JSON.stringify(data) }}"
+
+# Las paginas de contenido comparten estructura, breadcrumb y aviso medico.
+assert_file "components/content/ContentPage.tsx"
+assert_contains "components/content/ContentPage.tsx" "breadcrumbSchema"
+assert_contains "components/content/ContentPage.tsx" "medicalWebPageSchema"
+assert_contains "components/content/ContentPage.tsx" "<h1"
+assert_contains "components/content/ContentPage.tsx" "<h2"
+assert_contains "components/content/ContentPage.tsx" "no sustituye una consulta médica"
+
+# El byline "Revisado por" es una afirmación sobre revisión clínica: no puede cambiar ni desaparecer por accidente (la credencial incluida, no solo el nombre).
+assert_contains "components/content/ContentPage.tsx" "Revisado por el Dr. Manuel Espinoza Rueda, cardiólogo intervencionista."
+
+# ContentPage es Server Component: lo importan las 7 páginas de contenido de las tasks 12-15, sin "use client".
+assert_absent "components/content/ContentPage.tsx" '"use client"'
+
+# El slug se normaliza sin barras antes de armar el path: evita URLs con doble barra en el JSON-LD de las 7 paginas si el dato llega con "/".
+assert_contains "components/content/ContentPage.tsx" 'content.slug.replace(/^\/+|\/+$/g, "")'
+
+# Pagina dedicada a hemodinamia: fija el patron que replican las tasks 13-15.
+assert_file "app/hemodinamia/page.tsx"
+assert_file "data/content/hemodinamia.ts"
+
+# getRoute() reemplaza "routes.find(...)!": si la ruta no existe, el error
+# nombra el path buscado en vez de morir con un TypeError generico. Las 7
+# paginas de contenido de las tasks 12-15 usan este helper, no el find directo.
+assert_contains "data/routes.ts" "export function getRoute"
+assert_contains "app/hemodinamia/page.tsx" 'getRoute("/hemodinamia")'
+
+# pageMetadata() centraliza title/description/canonical/openGraph de cada
+# pagina de contenido: reemplaza el objeto "metadata" inline (con su propio
+# "canonical: ..." literal) que traia el commit anterior. Al vivir en un
+# solo lugar, las tasks 13-15 heredan la forma correcta en vez de copiar un
+# objeto a mano en cada page.tsx. Recibe la Route ya resuelta (no un path)
+# para que la pagina llame a getRoute() una sola vez.
+assert_file "lib/metadata.ts"
+assert_contains "lib/metadata.ts" "export function pageMetadata"
+assert_contains "app/hemodinamia/page.tsx" "pageMetadata(route)"
+assert_contains "lib/metadata.ts" "alternates: { canonical: route.path }"
+
+# getRoute() se llama una sola vez por pagina de contenido: antes tambien
+# se llamaba adentro de pageMetadata (path duplicado), ahora pageMetadata
+# recibe la Route ya resuelta y evita la segunda busqueda.
+assert_count "app/hemodinamia/page.tsx" "getRoute(" "1"
+
+# El openGraph de pageMetadata() declara su propia imagen: sin esto, el
+# openGraph explicito de la pagina reemplaza (no fusiona) el que
+# app/opengraph-image.tsx aporta al layout raiz -- la metadata se resuelve
+# con shallow merge por segmento, no deep merge -- y ninguna pagina de
+# contenido muestra imagen al compartirse por WhatsApp o Facebook. Se pinnea
+# la URL real de la imagen, no solo la clave "images", para que un array
+# vacio no deje esta asercion en verde.
+assert_contains "lib/metadata.ts" 'url: "/opengraph-image"'
+
+# getRoute() y pageMetadata() ya tenian aserciones de texto, pero ninguna
+# ejercia la logica real: un getRoute() saboteado para devolver siempre
+# routes[0] (ignorando el path, sin lanzar nunca) dejaba el contrato, tsc,
+# lint y build en verde igual, con el <title> del home filtrandose en
+# /hemodinamia. tests/routes.test.mjs corre esa logica de verdad con
+# node --test (ver npm run test:routes).
+assert_file "tests/routes.test.mjs"
+assert_contains "tests/routes.test.mjs" "getRoute lanza para un path no registrado"
+assert_contains "tests/routes.test.mjs" "err.message.includes(pathInexistente)"
+assert_contains "package.json" '"test:routes": "node --test tests/routes.test.mjs"'
+
+# El test de relacionadas descubre data/content/ en vez de listar archivos
+# a mano (crece solo cuando las tasks 13-15 agreguen paginas) y falla si el
+# directorio aparece vacio en vez de pasar en silencio.
+assert_contains "tests/routes.test.mjs" "readdirSync(contentDir)"
+assert_contains "tests/routes.test.mjs" "la prueba no puede pasar en vacio"
+
+# Pagina dedicada al infarto: replica el patron que hemodinamia (Task 12)
+# fijo -- getRoute() + pageMetadata(route), sin metadata inline ni
+# "routes.find(...)!".
+assert_file "app/infarto/page.tsx"
+assert_file "data/content/infarto.ts"
+assert_contains "app/infarto/page.tsx" 'getRoute("/infarto")'
+assert_contains "app/infarto/page.tsx" "pageMetadata(route)"
+assert_count "app/infarto/page.tsx" "getRoute(" "1"
+
+# El texto clinico prioriza la accion de emergencia por delante de la
+# explicacion: esta frase es la primera instruccion que recibe alguien con
+# dolor en el pecho leyendo la pagina, y no puede diluirse ni moverse de
+# lugar por accidente.
+assert_contains "data/content/infarto.ts" "buscá atención de emergencia"
+
+# Orden deliberado: /infarto puede recibir a alguien con dolor en el pecho ahora mismo; la urgencia va antes que la explicacion a proposito, no por capricho de estilo -- estos assert_precedes evitan que una edicion futura invierta esa cadena sin que el contrato lo note.
+assert_precedes "data/content/infarto.ts" "buscá atención de emergencia" "Qué es un infarto"
+assert_precedes "data/content/infarto.ts" "Señales de alarma" "Qué hacer en los primeros minutos"
+assert_precedes "data/content/infarto.ts" "Qué hacer en los primeros minutos" "Qué es un infarto"
+
+# Paginas de angioplastia coronaria y TAVI: mismo patron que hemodinamia
+# (Task 12) e infarto (Task 13) -- getRoute() + pageMetadata(route), sin
+# metadata inline ni "routes.find(...)!".
+assert_file "app/angioplastia-coronaria/page.tsx"
+assert_file "data/content/angioplastia-coronaria.ts"
+assert_contains "app/angioplastia-coronaria/page.tsx" 'getRoute("/angioplastia-coronaria")'
+assert_contains "app/angioplastia-coronaria/page.tsx" "pageMetadata(route)"
+assert_count "app/angioplastia-coronaria/page.tsx" "getRoute(" "1"
+
+assert_file "app/tavi-valvula-aortica/page.tsx"
+assert_file "data/content/tavi-valvula-aortica.ts"
+assert_contains "app/tavi-valvula-aortica/page.tsx" 'getRoute("/tavi-valvula-aortica")'
+assert_contains "app/tavi-valvula-aortica/page.tsx" "pageMetadata(route)"
+assert_count "app/tavi-valvula-aortica/page.tsx" "getRoute(" "1"
+
+# getRoute() y pageMetadata() solo fijan la RUTA de cada pagina, no el
+# CONTENIDO que renderiza: nada arriba impide que una pagina importe el
+# PageContent de otra (copy-paste del import), y con eso el contrato,
+# tsc, npm test y npm run build seguirian en verde con el h1 y el
+# BreadcrumbList equivocados en produccion. Se pinnea el contenido propio
+# de cada una de las 4 paginas de contenido existentes.
+assert_contains "app/hemodinamia/page.tsx" "content={hemodinamia}"
+assert_contains "app/infarto/page.tsx" "content={infarto}"
+assert_contains "app/angioplastia-coronaria/page.tsx" "content={angioplastiaCoronaria}"
+assert_contains "app/tavi-valvula-aortica/page.tsx" "content={taviValvulaAortica}"
+
+# Paginas de MyClip y marcapasos: cierran las 8 rutas del registro. Mismo
+# patron que hemodinamia (Task 12), infarto (Task 13) y angioplastia/TAVI
+# (Task 14) -- getRoute() + pageMetadata(route), sin metadata inline ni
+# "routes.find(...)!".
+assert_file "app/reparacion-mitral-myclip/page.tsx"
+assert_file "data/content/reparacion-mitral-myclip.ts"
+assert_contains "app/reparacion-mitral-myclip/page.tsx" 'getRoute("/reparacion-mitral-myclip")'
+assert_contains "app/reparacion-mitral-myclip/page.tsx" "pageMetadata(route)"
+assert_count "app/reparacion-mitral-myclip/page.tsx" "getRoute(" "1"
+
+assert_file "app/marcapasos/page.tsx"
+assert_file "data/content/marcapasos.ts"
+assert_contains "app/marcapasos/page.tsx" 'getRoute("/marcapasos")'
+assert_contains "app/marcapasos/page.tsx" "pageMetadata(route)"
+assert_count "app/marcapasos/page.tsx" "getRoute(" "1"
+
+# getRoute() y pageMetadata() solo fijan la RUTA: nada arriba impide que
+# estas dos paginas importen el PageContent de otra (copy-paste del import),
+# dejando el contrato, tsc, npm test y npm run build en verde con el h1 y el
+# BreadcrumbList equivocados en produccion. Se pinnea el contenido propio de
+# cada una, igual que ya se hace para las 4 paginas existentes arriba.
+assert_contains "app/reparacion-mitral-myclip/page.tsx" "content={reparacionMitralMyclip}"
+assert_contains "app/marcapasos/page.tsx" "content={marcapasos}"
+
+# BUG del plan corregido: "relacionadas" de marcapasos apuntaba a "/#contacto",
+# un ancla del home que no es una ruta registrada en data/routes.ts (la
+# rechazaria tests/routes.test.mjs). Con /contacto ya como pagina propia en
+# esta misma task, el destino correcto es esa ruta.
+assert_contains "data/content/marcapasos.ts" 'href: "/contacto"'
+assert_absent "data/content/marcapasos.ts" "/#contacto"
+
+# Pagina de contacto: reutiliza components/Contact.tsx (Task 8) para que el
+# NAP viva en un solo lugar; agrega el MedicalWebPage y el BreadcrumbList que
+# la seccion homonima del home no lleva. Mismo patron getRoute() +
+# pageMetadata() que las demas paginas de contenido. No usa ContentPage (el
+# contenido no es "secciones" de texto sino el bloque de Contact), asi que
+# se pinnea "<Contact />" como la protección equivalente al "content={...}"
+# de las otras paginas -- lo que impediria que esta pagina renderizara un
+# componente distinto sin que el contrato lo note.
+assert_file "app/contacto/page.tsx"
+assert_contains "app/contacto/page.tsx" 'getRoute("/contacto")'
+assert_contains "app/contacto/page.tsx" "pageMetadata(route)"
+assert_count "app/contacto/page.tsx" "getRoute(" "1"
+assert_contains "app/contacto/page.tsx" "<Contact />"
+assert_contains "app/contacto/page.tsx" "<h1"
+
+# El breadcrumb ("<nav>/<ol>/<li aria-current>") ya se corrigio una vez para
+# seguir el patron WAI-ARIA. ContentPage.tsx (7 paginas) y app/contacto/page.tsx
+# lo necesitan igual pero /contacto no tiene "secciones" para pasar por
+# PageContent, asi que el marcado vive en un solo componente compartido en vez
+# de copiarse a mano en los dos lugares -- sin esto, un cambio futuro en uno
+# de los dos puede divergir del otro sin que contrato, tsc, npm test ni build
+# lo noten.
+assert_file "components/content/Breadcrumb.tsx"
+assert_contains "components/content/ContentPage.tsx" "<Breadcrumb current={content.h1} />"
+assert_contains "app/contacto/page.tsx" "<Breadcrumb current={h1} />"
+assert_absent "app/contacto/page.tsx" 'aria-label="Ruta de navegación"'
+
+# Todo lo que vive bajo public/ se copia tal cual al build y se sube al VPS en
+# cada deploy, lo referencie alguien o no. Los originales del cliente (41 MB, con
+# los dos videos duplicados de public/video/ adentro) viven ahora en
+# assets-originales/, fuera del build. Si vuelven a public/, el deploy vuelve a
+# cargar 41 MB muertos sin que nada mas lo note.
+assert_no_path "public/Imagenes "
+assert_file "assets-originales/Videos/Video 1.mp4"
+
+# Medido con Chrome headless sobre el build real: con preload="metadata" el
+# navegador se bajaba los DOS videos enteros al cargar el home -- 38.521 KB de
+# video y 40.672 KB de pagina, antes de que el visitante tocara nada. Con
+# preload="none" son 0 peticiones de .mp4 y 2.151 KB de pagina, y el video
+# sigue reproduciendo al presionar play. El poster ya estaba, asi que la
+# tarjeta se ve igual. No volver a "metadata" ni a "auto".
+assert_contains "components/Videos.tsx" 'preload="none"'
+assert_absent "components/Videos.tsx" 'preload="metadata"'
+assert_absent "components/Videos.tsx" 'preload="auto"'
 
 printf 'Site redesign contract passed.\n'

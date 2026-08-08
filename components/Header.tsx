@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { doctor, nav } from "@/data/site";
 
@@ -11,8 +12,8 @@ export default function Header() {
   return (
     <header className="absolute inset-x-0 top-0 z-[70] px-3 pt-3 sm:px-6 sm:pt-5">
       <div className="header-frame relative mx-auto flex h-[4.5rem] max-w-[99rem] items-center text-white xl:pr-[12rem]">
-        <a
-          href="#inicio"
+        <Link
+          href="/"
           onClick={() => setOpen(false)}
           className="group flex min-h-11 items-center gap-3 rounded-full pr-3"
           aria-label={`${doctor.name}, ir al inicio`}
@@ -37,7 +38,7 @@ export default function Header() {
               Cardiología intervencionista
             </span>
           </span>
-        </a>
+        </Link>
 
         <nav
           className="absolute right-0 hidden items-center xl:flex"
@@ -92,19 +93,19 @@ export default function Header() {
               <ArrowUpRight className="h-4 w-4 text-cobalt" aria-hidden="true" />
             </a>
           ))}
-          <a
-            href="#citas"
+          <Link
+            href="/#citas"
             onClick={() => setOpen(false)}
             className="mt-2 flex min-h-12 items-center justify-between rounded-2xl bg-cobalt px-4 text-sm font-semibold text-white"
           >
             Agendar cita
             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-          </a>
+          </Link>
         </nav>
       </div>
 
-      <a
-        href="#citas"
+      <Link
+        href="/#citas"
         onClick={() => setOpen(false)}
         aria-label="Agendar cita"
         className="header-booking-float group fixed right-5 top-1/2 z-[80] hidden h-12 -translate-y-1/2 items-center rounded-full border border-white/15 bg-navy/95 py-1 pl-4 pr-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_18px_46px_-20px_rgba(2,12,39,0.76)] backdrop-blur-md transition-[background-color,transform,box-shadow] duration-300 hover:-translate-y-[calc(50%+3px)] hover:bg-cobalt-bright hover:shadow-[0_22px_52px_-18px_rgba(2,12,39,0.86)] xl:inline-flex"
@@ -113,7 +114,7 @@ export default function Header() {
         <span className="ml-3 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-ink transition-transform duration-500 group-hover:-rotate-45">
           <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </span>
-      </a>
+      </Link>
     </header>
   );
 }

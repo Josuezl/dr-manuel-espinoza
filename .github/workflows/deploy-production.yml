@@ -145,9 +145,21 @@ jobs:
           # seguir redirecciones) y se compara explicitamente contra "200":
           # una redireccion queda expuesta con su propio codigo (301/302),
           # no oculta detras del 200 al que redirige.
+          #
+          # Se consulta por HTTPS con --resolve, no por http://127.0.0.1 con
+          # cabecera Host: el bloque de puerto 80 que administra Certbot
+          # redirige TODO a https, asi que sobre http las 8 rutas devuelven
+          # 301 sin llegar nunca al sitio. Ese era el agujero real del check
+          # anterior con "curl -fsS": -f no falla ante un 301, de modo que
+          # pasaba en verde sin haber comprobado una sola pagina.
+          # --resolve apunta el nombre publico a 127.0.0.1 conservando el SNI,
+          # asi que el certificado valida y no hace falta -k: el health check
+          # tambien cubre TLS.
           all_ok=1
           for path in $route_paths; do
-            code="$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $healthcheck_host" "http://127.0.0.1${path}")" \
+            code="$(curl -s -o /dev/null -w '%{http_code}' \
+              --resolve "${healthcheck_host}:443:127.0.0.1" \
+              "https://${healthcheck_host}${path}")" \
               || code="000"
             if [[ "$code" == "200" ]]; then
               printf 'Health check OK   %-28s %s\n' "$path" "$code"
